@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <link rel="stylesheet"
+          data-name="vs/editor/editor.main"
+          href="./min/vs/editor/editor.main.css" />
+
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        #container {
+            height: 100%;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div id="container"></div>
+
+    <script src="./min/vs/loader.js"></script>
+    <script>
+        require.config({ paths: { 'vs': './min/vs' } });
+    </script>
+    <script src="./min/vs/editor/editor.main.nls.js"></script>
+    <script src="./min/vs/editor/editor.main.js"></script>
+
+    <script>
+        var editor = monaco.editor.create(document.getElementById('container'), {
+            value: '',
+            language: 'javascript'
+        });
+
+        window.onresize = function () {
+            if (editor) {
+                editor.layout();
+            }
+        };
+    </script>
+
+    <script>
+        // communication logic with parent element (winui webview)
+        function handleWebViewMessage(message) {
+            try {
+                if (window.hasOwnProperty("chrome") && typeof chrome.webview !== undefined) {
+                    // Windows
+                    chrome.webview.postMessage(message);
+                } else if (window.hasOwnProperty("unoWebView")) {
+                    // Android
+                    unoWebView.postMessage(JSON.stringify(message));
+                } else if (window.hasOwnProperty("webkit") && typeof webkit.messageHandlers !== undefined) {
+                    // iOS and macOS
+                    webkit.messageHandlers.unoWebView.postMessage(JSON.stringify(message));
+                }
+            }
+            catch (ex) {
+                alert("Error occurred: " + ex);
+            }
+        }
+
+        // trigger event if monaco is loaded
+        editor.getAction('editor.action.formatDocument').run().then(() => {
+            handleWebViewMessage('EVENT_EDITOR_LOADED');
+        });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Edam.Data.CatalogDb\Edam.Data.CatalogDb.csproj" />
+    <ProjectReference Include="..\Edam.Data.CatalogModel\Edam.Data.CatalogModel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Edam.Common">
+      <HintPath>..\..\Edam.Common\Edam.Common\bin\Debug\net9.0\Edam.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Edam.Net">
+      <HintPath>..\..\Edam.Common\Edam.Net\bin\Debug\net9.0\Edam.Net.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

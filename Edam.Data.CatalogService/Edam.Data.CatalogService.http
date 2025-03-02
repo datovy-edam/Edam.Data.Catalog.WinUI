@@ -1,0 +1,6 @@
+@Edam.Data.CatalogService_HostAddress = http://localhost:5194
+
+GET {{Edam.Data.CatalogService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
