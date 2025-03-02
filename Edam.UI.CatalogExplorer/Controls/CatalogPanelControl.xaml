@@ -1,0 +1,50 @@
+﻿<UserControl
+    x:Class="Edam.UI.Catalog.Controls.CatalogPanelControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Edam.UI.Catalog.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:szer="using:CommunityToolkit.WinUI.Controls"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400"
+    Loaded="UserControl_Loaded">
+
+  <Grid Grid.Row="1" BorderBrush="LightGray" BorderThickness="1">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="400" />
+      <ColumnDefinition MaxWidth="16" />
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+
+    <Grid Grid.Column="0" BorderBrush="LightGray" BorderThickness="1">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="16" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+
+      <local:CatalogContainerControl Grid.Row="0" x:Name="CatalogContainer" />
+
+      <szer:GridSplitter Grid.Row="1" Height="16" VerticalAlignment="Top">
+        <szer:GridSplitter.RenderTransform>
+          <TranslateTransform X="-7" />
+        </szer:GridSplitter.RenderTransform>
+      </szer:GridSplitter>
+
+      <local:CatalogExplorerControl Grid.Row="2" x:Name="CatalogExplorer" />
+    </Grid>
+
+    <szer:GridSplitter Grid.Column="1" Width="16" HorizontalAlignment="Left"
+                       ResizeBehavior="BasedOnAlignment" ResizeDirection="Auto">
+      <szer:GridSplitter.RenderTransform>
+        <TranslateTransform X="-7" />
+      </szer:GridSplitter.RenderTransform>
+    </szer:GridSplitter>
+
+    <Grid Grid.Column="2">
+      <local:EditorTabsControl x:Name="EditorTabs" />
+    </Grid>
+  </Grid>
+</UserControl>
