@@ -17,8 +17,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Edam.UI.CatalogExplorer", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Monaco", "Monaco\Monaco.csproj", "{BA344BBD-60BE-49CC-B1CE-0DE17D4C2BA4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.WinUI.Controls.Sizers", "CommunityToolkit.WinUI.Controls.Sizers\CommunityToolkit.WinUI.Controls.Sizers.csproj", "{EB0EC6BB-434E-4A52-AA4A-EDED3D2D50E1}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -119,18 +117,6 @@ Global
 		{BA344BBD-60BE-49CC-B1CE-0DE17D4C2BA4}.Release|x64.Build.0 = Release|Any CPU
 		{BA344BBD-60BE-49CC-B1CE-0DE17D4C2BA4}.Release|x86.ActiveCfg = Release|Any CPU
 		{BA344BBD-60BE-49CC-B1CE-0DE17D4C2BA4}.Release|x86.Build.0 = Release|Any CPU
-		{EB0EC6BB-434E-4A52-AA4A-EDED3D2D50E1}.Debug|ARM64.ActiveCfg = Debug|Any CPU
-		{EB0EC6BB-434E-4A52-AA4A-EDED3D2D50E1}.Debug|ARM64.Build.0 = Debug|Any CPU
-		{EB0EC6BB-434E-4A52-AA4A-EDED3D2D50E1}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{EB0EC6BB-434E-4A52-AA4A-EDED3D2D50E1}.Debug|x64.Build.0 = Debug|Any CPU
-		{EB0EC6BB-434E-4A52-AA4A-EDED3D2D50E1}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{EB0EC6BB-434E-4A52-AA4A-EDED3D2D50E1}.Debug|x86.Build.0 = Debug|Any CPU
-		{EB0EC6BB-434E-4A52-AA4A-EDED3D2D50E1}.Release|ARM64.ActiveCfg = Release|Any CPU
-		{EB0EC6BB-434E-4A52-AA4A-EDED3D2D50E1}.Release|ARM64.Build.0 = Release|Any CPU
-		{EB0EC6BB-434E-4A52-AA4A-EDED3D2D50E1}.Release|x64.ActiveCfg = Release|Any CPU
-		{EB0EC6BB-434E-4A52-AA4A-EDED3D2D50E1}.Release|x64.Build.0 = Release|Any CPU
-		{EB0EC6BB-434E-4A52-AA4A-EDED3D2D50E1}.Release|x86.ActiveCfg = Release|Any CPU
-		{EB0EC6BB-434E-4A52-AA4A-EDED3D2D50E1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

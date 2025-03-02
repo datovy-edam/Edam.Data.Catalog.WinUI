@@ -33,6 +33,7 @@ public sealed partial class CatalogPanelControl : UserControl
             AppSession.ApplicationStateChangeNotify += 
                 ManageApplicationStateChange;
         }
+
     }
 
     /// <summary>
