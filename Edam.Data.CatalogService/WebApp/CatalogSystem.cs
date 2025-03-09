@@ -60,7 +60,7 @@ public class CatalogSystem
    {
       if (_Containers.Count == 0)
       {
-         var clist = Instance.GetContainers();
+         var clist = Instance.Container.GetContainers();
          foreach (var c in clist)
          {
             _Containers.Add(c);
@@ -80,7 +80,8 @@ public class CatalogSystem
    {
       WebAppService.SetupSession(String.IsNullOrWhiteSpace(sessionId) ?
          new Guid().ToString() : sessionId);
-      ContainerInfo? container = _Instance.SetContainer(sessionId, containerId);
+      ContainerInfo? container = 
+         _Instance.Container.SetContainer(sessionId, containerId);
 
       return container;
    }

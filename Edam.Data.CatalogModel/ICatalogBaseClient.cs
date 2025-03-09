@@ -1,17 +1,21 @@
-﻿using System;
+﻿using Edam.Diagnostics;
+using Edam.Net.Web;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-// -----------------------------------------------------------------------------
-
-using Edam.DataObjects.Requests;
-
 namespace Edam.Data.CatalogModel;
 
-public interface ICatalogService
+public interface ICatalogBaseClient
 {
+   string BaseURI { get; }
+   string LastSessionId { get; }
+   string ConnectionString { get; }
+   IResultsLog ResultsLog { get; }
+   WebApiClient Client { get; }
+
    ContainerInfo DefaultContainer { get; set; }
    ContainerInfo CurrentContainer { get; set; }
 

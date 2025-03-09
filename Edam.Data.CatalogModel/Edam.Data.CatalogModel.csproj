@@ -15,6 +15,9 @@
     <Reference Include="Edam.Common">
       <HintPath>..\..\Edam.Common\Edam.Common\bin\Debug\net9.0\Edam.Common.dll</HintPath>
     </Reference>
+    <Reference Include="Edam.Net">
+      <HintPath>..\..\Edam.Common\Edam.Net\bin\Debug\net9.0\Edam.Net.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

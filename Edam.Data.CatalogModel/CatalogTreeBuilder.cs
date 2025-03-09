@@ -83,7 +83,7 @@ public class CatalogTreeBuilder
       pitem.Container = _Service.CurrentContainer;
       pitem.ContainerId = pitem.Container.Id;
 
-      await _Service.AddItemAsync(pitem);
+      await _Service.Item.AddItemAsync(pitem);
       return pitem;
    }
 
@@ -116,7 +116,7 @@ public class CatalogTreeBuilder
 
          pathItem.TreeItem.Title = pathItem.Item.Description;
 
-         await _Service.AddItemAsync(pathItem.Item);
+         await _Service.Item.AddItemAsync(pathItem.Item);
       }
    }
 
@@ -152,9 +152,9 @@ public class CatalogTreeBuilder
          }
          
          // add branch to repository
-         ItemInfo item = await _Service.CreateBranchAsync(path);
+         ItemInfo item = await _Service.Item.CreateBranchAsync(path);
          item.FullPath = path;
-         item = await _Service.AddItemAsync(item);
+         item = await _Service.Item.AddItemAsync(item);
 
          // add branch to registry
          var pathItem = new CatalogPathItem(item);
@@ -269,7 +269,7 @@ public class CatalogTreeBuilder
    {
       CatalogPathItem item = null;
       ItemInfo fitem = new ItemInfo();
-      var pitem = await _Service.GetItemByPathAsync(fullPath);
+      var pitem = await _Service.Item.GetItemByPathAsync(fullPath);
       if (pitem != null)
       {
          fitem = pitem;
@@ -333,7 +333,7 @@ public class CatalogTreeBuilder
    {
       string spath = GetPath(path);
       spath = spath.Length > 1 ? spath + "/" : spath;
-      var items = await _Service.GetBranchAsync(spath);
+      var items = await _Service.Item.GetBranchAsync(spath);
       foreach (var item in items)
       {
          await GetItemAsync(item);

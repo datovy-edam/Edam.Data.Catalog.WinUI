@@ -53,7 +53,7 @@ app.MapGet("/catalogservice/container/info", (
 app.MapGet("/catalogservice/container/id", (
    string sessionId, string id) =>
 {
-   var container = appService.CatalogSystem.Instance.GetContainer(id);
+   var container = appService.CatalogSystem.Instance.Container.GetContainer(id);
    return container;
 });
 
@@ -61,7 +61,7 @@ app.MapGet("/catalogservice/container/id", (
 app.MapGet("/catalogservice/container/items/id", (
    string sessionId, Guid id) =>
 {
-   var item = appService.CatalogSystem.Instance.GetContainerItems(id);
+   var item = appService.CatalogSystem.Instance.Item.GetContainerItems(id);
    return item;
 });
 
@@ -69,7 +69,7 @@ app.MapGet("/catalogservice/container/items/id", (
 app.MapGet("/catalogservice/container/item/root/id", (
    string sessionId, Guid id) =>
 {
-   var container = appService.CatalogSystem.Instance.GetContainerRootItem(id);
+   var container = appService.CatalogSystem.Instance.Item.GetContainerRootItem(id);
    return container;
 });
 
@@ -93,7 +93,7 @@ app.MapGet("/catalogservice/container/enlist", (
    {
       return new ContainerInfo();
    }
-   return appService.CatalogSystem.Instance.EnlistContainer(
+   return appService.CatalogSystem.Instance.Container.EnlistContainer(
       containerId, description);
 });
 
@@ -107,7 +107,7 @@ app.MapGet("/catalogservice/container/delist", (
    {
       return new ContainerInfo();
    }
-   return appService.CatalogSystem.Instance.DelistContainer(containerId);
+   return appService.CatalogSystem.Instance.Container.DelistContainer(containerId);
 });
 
 #endregion
@@ -124,7 +124,7 @@ app.MapPost("/catalogservice/catalog/item", (
    //   return null;
    //}
 
-   var aitem = appService.CatalogSystem.Instance.AddItem(item);
+   var aitem = appService.CatalogSystem.Instance.Item.AddItem(item);
    ritem = szer.JsonSerializer.Serialize<ItemInfo>(aitem);
    return ritem;
 });
@@ -140,7 +140,7 @@ app.MapGet("/catalogservice/catalog/item/id", (
    //   return null;
    //}
 
-   ItemInfo item = appService.CatalogSystem.Instance.GetItem(id);
+   ItemInfo item = appService.CatalogSystem.Instance.Item.GetItem(id);
 
    return item;
 });
@@ -156,7 +156,7 @@ app.MapGet("/catalogservice/catalog/item/path", (
    //   return null;
    //}
 
-   ItemInfo item = appService.CatalogSystem.Instance.GetItemByPath(path);
+   ItemInfo item = appService.CatalogSystem.Instance.Item.GetItemByPath(path);
 
    return item;
 });
@@ -175,7 +175,7 @@ app.MapDelete("/catalogservice/catalog/item/id", (
    RequestResponseInfo response = new RequestResponseInfo();
    try
    {
-      appService.CatalogSystem.Instance.DeleteItem(id);
+      appService.CatalogSystem.Instance.Item.DeleteItem(id);
       response.Success = true;
       response.Status = RequestStatus.Completed;
    }
@@ -203,7 +203,7 @@ app.MapGet("/catalogservice/catalog/branch/items", (
    //   return null;
    //}
 
-   List<ItemInfo> item = appService.CatalogSystem.Instance.GetBranch(path);
+   List<ItemInfo> item = appService.CatalogSystem.Instance.Item.GetBranch(path);
 
    return item;
 });
@@ -222,7 +222,7 @@ app.MapPost("/catalogservice/catalog/data/item", (
    //   return null;
    //}
 
-   var aitem = appService.CatalogSystem.Instance.AddItem(itemData);
+   var aitem = appService.CatalogSystem.Instance.ItemData.AddItem(itemData);
    ritem = szer.JsonSerializer.Serialize<ItemDataInfo>(aitem);
    return ritem;
 });
@@ -238,7 +238,7 @@ app.MapGet("/catalogservice/catalog/data/items/id", (
    //   return null;
    //}
 
-   List<ItemDataInfo> items = appService.CatalogSystem.Instance.GetItemData(id);
+   List<ItemDataInfo> items = appService.CatalogSystem.Instance.ItemData.GetItemData(id);
 
    return items;
 });
@@ -255,7 +255,7 @@ app.MapGet("/catalogservice/catalog/data/item/name", (
    //}
 
    ItemDataInfo items = 
-      appService.CatalogSystem.Instance.GetDataByName(itemId, name);
+      appService.CatalogSystem.Instance.ItemData.GetDataByName(itemId, name);
 
    return items;
 });
@@ -272,7 +272,7 @@ app.MapGet("/catalogservice/catalog/data/item/id", (
    //}
 
    List<ItemDataInfo> items =
-      appService.CatalogSystem.Instance.GetItemData(id);
+      appService.CatalogSystem.Instance.ItemData.GetItemData(id);
 
    return items;
 });
@@ -291,7 +291,7 @@ app.MapDelete("/catalogservice/catalog/data/item/id", (
    RequestResponseInfo response = new RequestResponseInfo();
    try
    {
-      appService.CatalogSystem.Instance.DeleteItemData(id);
+      appService.CatalogSystem.Instance.ItemData.DeleteItemData(id);
       response.Success = true;
       response.Status = RequestStatus.Completed;
    }
@@ -318,7 +318,7 @@ app.MapDelete("/catalogservice/catalog/data/id", (
    RequestResponseInfo response = new RequestResponseInfo();
    try
    {
-      appService.CatalogSystem.Instance.DeleteData(id);
+      appService.CatalogSystem.Instance.ItemData.DeleteData(id);
       response.Success = true;
       response.Status = RequestStatus.Completed;
    }
@@ -346,7 +346,7 @@ app.MapGet("/catalogservice/catalog/content/type/id", (
    //}
 
    ContentTypeInfo contentType =
-      appService.CatalogSystem.Instance.GetContentType(contentTypeId);
+      appService.CatalogSystem.Instance.ItemData.GetContentType(contentTypeId);
 
    return contentType;
 });

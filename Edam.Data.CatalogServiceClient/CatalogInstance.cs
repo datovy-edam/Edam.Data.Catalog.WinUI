@@ -6,11 +6,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Edam.Data.CatalogServiceClient;
+// -----------------------------------------------------------------------------
+
+namespace Edam.Data.CatalogService;
 
 public class CatalogInstance
 {
    public const string EDAM_BASE_URI = "edam.base.uri.db";
+   public const string EDAM_FILE_SYSTEM_CATALOG = "edam.file.system.catalog";
    private static string _CatalogName = EDAM_BASE_URI;
 
    /// <summary>
@@ -31,6 +34,12 @@ public class CatalogInstance
             case EDAM_BASE_URI:
                _CatalogName = EDAM_BASE_URI;
                results.Instance = new CatalogClient(sessionId, baseUri);
+               results.Succeeded();
+               break;
+            case EDAM_FILE_SYSTEM_CATALOG:
+               _CatalogName = baseUri;
+               results.Instance = 
+                  new CatalogFileSystemClient(sessionId, baseUri);
                results.Succeeded();
                break;
             default:

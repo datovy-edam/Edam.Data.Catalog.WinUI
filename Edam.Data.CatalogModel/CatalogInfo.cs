@@ -34,14 +34,14 @@ public class CatalogInfo
    /// </summary>
    private Dictionary<string, CatalogPathItem>? _CatalogDictionary = 
       new Dictionary<string, CatalogPathItem>();
-   private int _CatalogChangeCount = 0;
+   //private int _CatalogChangeCount = 0;
 
    public Dictionary<string, CatalogPathItem>? CatalogDictionary
    {
       get { return _CatalogDictionary; }
    }
 
-   private ICatalogService? _CatalogInstance = null;
+   //private ICatalogService? _CatalogInstance = null;
 
    public TreeItem? CatalogEntry { get; set; } = null;
 
@@ -77,10 +77,10 @@ public class CatalogInfo
    public async Task<CatalogInfo> InitializeCatalogAsync(
       string containerId, bool buildTree = false)
    {
-      var container = await _CatalogService.GetContainerAsync(containerId);
+      var container = await _CatalogService.Container.GetContainerAsync(containerId);
 
       // create root item...
-      var rootItem = await _CatalogService.GetContainerRootItemAsync(
+      var rootItem = await _CatalogService.Item.GetContainerRootItemAsync(
          _CatalogService.DefaultContainer.Id);
       RootPathItem = CatalogTreeBuilder.ToPathItem(rootItem);
 

@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
 using Edam.Data.CatalogModel;
+using Edam.Application;
+using Edam.DataObjects.Medias;
 
 namespace Edam.Data.CatalogDb;
 

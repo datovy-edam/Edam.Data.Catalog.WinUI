@@ -9,8 +9,9 @@ using System.Threading.Tasks;
 using Edam.DataObjects.Trees;
 using System.Text.Json.Serialization;
 
-namespace Edam.Data.CatalogModel;
+// -----------------------------------------------------------------------------
 
+namespace Edam.Data.CatalogModel;
 
 /// <summary>
 /// Similar to a FileSystem drive.
@@ -31,6 +32,10 @@ public class ContainerInfo: ITreeContainer
    [MaxLength(1024)]
    public string Description { get; set; } = "Default";
 
+   public ContainerType ContainerType { get; set; } = ContainerType.WebApi;
+
+   [MaxLength(1024)]
+   public string ContainerURI { get; set; } = "";
 
    public string ContentType { get; set; } = SCHEMA_CONTENT_TYPE_JSON;
    public string Catalog { get; set; } = "{}";
