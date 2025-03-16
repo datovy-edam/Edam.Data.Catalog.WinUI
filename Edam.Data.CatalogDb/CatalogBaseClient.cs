@@ -60,40 +60,71 @@ public partial class CatalogBaseClient : ICatalogBaseClient
 
    protected string _BaseURI;
 
+   protected CatalogTreeBuilder? _builder = null;
    protected string _lastSessionId;
    protected HttpRequestInfo _httpRequestInfo;
    protected WebApiClient _client;
    protected IResultsLog _resultsLog = new ResultLog();
    protected string _defaultConnectionString;
 
+   /// <summary>
+   /// Catalog Tree Builder used when a dynamic tree is needed.
+   /// </summary>
+   public CatalogTreeBuilder Cataloger
+   {
+      get { return _builder; }
+   }
+
+   /// <summary>
+   /// Data Context required Default Connection String in case another
+   /// is not provided.
+   /// </summary>
    public string ConnectionString
    {
       get { return _defaultConnectionString; }
    }
 
-   public string BaseURI
-   {
-      get { return _BaseURI; }
-   }
-
-   public string LastSessionId
-   {
-      get { return _lastSessionId; }
-   }
-
-   public IResultsLog ResultsLog
-   {
-      get { return _resultsLog; }
-   }
-
+   /// <summary>
+   /// Web API Client used when HTTP services will be used.
+   /// </summary>
    public WebApiClient Client
    {
       get { return _client; }
    }
 
+   /// <summary>
+   /// Base URI such as an HTTP for WebAPI or a file system path.
+   /// </summary>
+   public string BaseURI
+   {
+      get { return _BaseURI; }
+   }
+
+   /// <summary>
+   /// Catalog Client Session ID.
+   /// </summary>
+   public string LastSessionId
+   {
+      get { return _lastSessionId; }
+   }
+
+   /// <summary>
+   /// Diagnostics Log results gathered while processing requests.
+   /// </summary>
+   public IResultsLog ResultsLog
+   {
+      get { return _resultsLog; }
+   }
+
+   /// <summary>
+   /// Default and Current Containers.
+   /// </summary>
    public ContainerInfo DefaultContainer { get; set; }
    public ContainerInfo CurrentContainer { get; set; }
 
+   /// <summary>
+   /// Catalog Service Container, Item, and ItemData helpers.
+   /// </summary>
    public ICatalogContainer Container { get; set; }
    public ICatalogItem Item { get; set; }
    public ICatalogItemData ItemData { get; set; }

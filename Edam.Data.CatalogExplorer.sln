@@ -17,6 +17,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Edam.UI.CatalogExplorer", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Monaco", "Monaco\Monaco.csproj", "{BA344BBD-60BE-49CC-B1CE-0DE17D4C2BA4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Edam.Test.TestBuilder", "Testing\Edam.Test.TestBuilder\Edam.Test.TestBuilder.csproj", "{C794F1F8-ED54-486A-AEB8-E36F04376502}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Testing", "Testing", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Edam.Test.TestCatalogLibrary", "Testing\Edam.Test.TestCatalogLibrary\Edam.Test.TestCatalogLibrary.csproj", "{37684DB3-CC96-47AB-8C6E-7F3DF6E11F21}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -117,9 +123,37 @@ Global
 		{BA344BBD-60BE-49CC-B1CE-0DE17D4C2BA4}.Release|x64.Build.0 = Release|Any CPU
 		{BA344BBD-60BE-49CC-B1CE-0DE17D4C2BA4}.Release|x86.ActiveCfg = Release|Any CPU
 		{BA344BBD-60BE-49CC-B1CE-0DE17D4C2BA4}.Release|x86.Build.0 = Release|Any CPU
+		{C794F1F8-ED54-486A-AEB8-E36F04376502}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{C794F1F8-ED54-486A-AEB8-E36F04376502}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{C794F1F8-ED54-486A-AEB8-E36F04376502}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C794F1F8-ED54-486A-AEB8-E36F04376502}.Debug|x64.Build.0 = Debug|Any CPU
+		{C794F1F8-ED54-486A-AEB8-E36F04376502}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C794F1F8-ED54-486A-AEB8-E36F04376502}.Debug|x86.Build.0 = Debug|Any CPU
+		{C794F1F8-ED54-486A-AEB8-E36F04376502}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{C794F1F8-ED54-486A-AEB8-E36F04376502}.Release|ARM64.Build.0 = Release|Any CPU
+		{C794F1F8-ED54-486A-AEB8-E36F04376502}.Release|x64.ActiveCfg = Release|Any CPU
+		{C794F1F8-ED54-486A-AEB8-E36F04376502}.Release|x64.Build.0 = Release|Any CPU
+		{C794F1F8-ED54-486A-AEB8-E36F04376502}.Release|x86.ActiveCfg = Release|Any CPU
+		{C794F1F8-ED54-486A-AEB8-E36F04376502}.Release|x86.Build.0 = Release|Any CPU
+		{37684DB3-CC96-47AB-8C6E-7F3DF6E11F21}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{37684DB3-CC96-47AB-8C6E-7F3DF6E11F21}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{37684DB3-CC96-47AB-8C6E-7F3DF6E11F21}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{37684DB3-CC96-47AB-8C6E-7F3DF6E11F21}.Debug|x64.Build.0 = Debug|Any CPU
+		{37684DB3-CC96-47AB-8C6E-7F3DF6E11F21}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{37684DB3-CC96-47AB-8C6E-7F3DF6E11F21}.Debug|x86.Build.0 = Debug|Any CPU
+		{37684DB3-CC96-47AB-8C6E-7F3DF6E11F21}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{37684DB3-CC96-47AB-8C6E-7F3DF6E11F21}.Release|ARM64.Build.0 = Release|Any CPU
+		{37684DB3-CC96-47AB-8C6E-7F3DF6E11F21}.Release|x64.ActiveCfg = Release|Any CPU
+		{37684DB3-CC96-47AB-8C6E-7F3DF6E11F21}.Release|x64.Build.0 = Release|Any CPU
+		{37684DB3-CC96-47AB-8C6E-7F3DF6E11F21}.Release|x86.ActiveCfg = Release|Any CPU
+		{37684DB3-CC96-47AB-8C6E-7F3DF6E11F21}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C794F1F8-ED54-486A-AEB8-E36F04376502} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{37684DB3-CC96-47AB-8C6E-7F3DF6E11F21} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {53747EA2-3925-4D3C-B114-441D291E723D}

@@ -1,7 +1,4 @@
-﻿using Edam.Data.CatalogModel;
-using Edam.DataObjects.Requests;
-using Edam.Text;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,10 +6,14 @@ using System.Threading.Tasks;
 
 // -----------------------------------------------------------------------------
 using Edam.Data.CatalogDb;
+using Edam.Data.CatalogModel;
+using Edam.Text;
+using Edam.DataObjects.Requests;
+using System.Text.RegularExpressions;
 
-namespace Edam.Data.CatalogService;
+namespace Edam.Data.CatalogServiceClient;
 
-public class ClientCatalogItem : ICatalogItem
+public class CatalogFileSystemItem : ICatalogItem
 {
 
    #region -- 4.00 - Properties and Definitions
@@ -23,7 +24,7 @@ public class ClientCatalogItem : ICatalogItem
       get { return _Client; }
    }
 
-   public ClientCatalogItem(ICatalogBaseClient client)
+   public CatalogFileSystemItem(ICatalogBaseClient client)
    {
       _Client = client;
    }
@@ -38,24 +39,7 @@ public class ClientCatalogItem : ICatalogItem
    /// <returns>root item is returned</returns>
    public async Task<ItemInfo> GetContainerRootItemAsync(Guid id)
    {
-      _Client.ResultsLog.Clear();
-
-      QueryStringBuilder pars = new QueryStringBuilder();
-      pars.Add(QueryStringTag.SessionId, _Client.LastSessionId);
-      pars.Add(CatalogBaseClient.TAG_CONTAINER_GUID, id.ToString());
-      ItemInfo item = null;
-
-      var req = CatalogBaseClient.URI_CONTAINER_ROOT_ITEM_ID + pars.ToString();
-      try
-      {
-         item = await _Client.Client.GetDataFromJsonAsync<ItemInfo>(req);
-      }
-      catch (Exception ex)
-      {
-         _Client.ResultsLog.Failed(ex);
-      }
-
-      return item;
+      return GetContainerRootItem(id);
    }
 
    /// <summary>
@@ -65,14 +49,10 @@ public class ClientCatalogItem : ICatalogItem
    /// <returns>root item is returned</returns>
    public ItemInfo GetContainerRootItem(Guid id)
    {
-      ItemInfo? item = null;
-      Task<ItemInfo> result = GetContainerRootItemAsync(id);
-      result.Wait();
-      if (result.Status == TaskStatus.RanToCompletion)
-      {
-         item = result.Result;
-      }
-      return item;
+      _Client.ResultsLog.Clear();
+      var container = _Client.Container.GetContainer(id);
+      var l = _Client.Cataloger.GetPathItems();
+      return l.Count > 0 ? l[0].Item : null;
    }
 
    /// <summary>
@@ -82,24 +62,7 @@ public class ClientCatalogItem : ICatalogItem
    /// <returns>list of items is returned</returns>
    public async Task<List<ItemInfo>> GetContainerItemsAsync(Guid id)
    {
-      _Client.ResultsLog.Clear();
-
-      QueryStringBuilder pars = new QueryStringBuilder();
-      pars.Add(QueryStringTag.SessionId, _Client.LastSessionId);
-      pars.Add(CatalogBaseClient.TAG_CONTAINER_GUID, id.ToString());
-      List<ItemInfo> item = null;
-
-      var req = CatalogBaseClient.URI_CONTAINER_ITEMS + pars.ToString();
-      try
-      {
-         item = await _Client.Client.GetDataFromJsonAsync<List<ItemInfo>>(req);
-      }
-      catch (Exception ex)
-      {
-         _Client.ResultsLog.Failed(ex);
-      }
-
-      return item;
+      return GetContainerItems(id);
    }
 
    /// <summary>
@@ -109,14 +72,9 @@ public class ClientCatalogItem : ICatalogItem
    /// <returns>list of items is returned</returns>
    public List<ItemInfo> GetContainerItems(Guid id)
    {
-      List<ItemInfo> items = null;
-      Task<List<ItemInfo>> result = GetContainerItemsAsync(id);
-      result.Wait();
-      if (result.Status == TaskStatus.RanToCompletion)
-      {
-         items = result.Result;
-      }
-      return items;
+      _Client.ResultsLog.Clear();
+      var container = _Client.Container.GetContainer(id);
+      return _Client.Cataloger.GetItems();
    }
 
    #endregion
@@ -129,23 +87,7 @@ public class ClientCatalogItem : ICatalogItem
    /// <returns>created item is returned, else null</returns>
    public async Task<ItemInfo> AddItemAsync(ItemInfo item)
    {
-      _Client.ResultsLog.Clear();
-
-      QueryStringBuilder pars = new QueryStringBuilder();
-      pars.Add(QueryStringTag.SessionId, _Client.LastSessionId);
-      ItemInfo result = null;
-
-      var req = CatalogBaseClient.URI_ITEM_ADD + pars.ToString();
-      try
-      {
-         result = await _Client.Client.PostAsync<ItemInfo>(req, item);
-      }
-      catch (Exception ex)
-      {
-         _Client.ResultsLog.Failed(ex);
-      }
-
-      return result;
+      return AddItem(item);
    }
 
    /// <summary>
@@ -155,14 +97,13 @@ public class ClientCatalogItem : ICatalogItem
    /// <returns>created item is returned, else null</returns>
    public ItemInfo AddItem(ItemInfo item)
    {
-      ItemInfo? itm = null;
-      Task<ItemInfo> result = AddItemAsync(item);
-      result.Wait();
-      if (result.Status == TaskStatus.RanToCompletion)
+      _Client.ResultsLog.Clear();
+      // try to find the item in the file system..
+      if (!File.Exists(item.FullPath))
       {
-         itm = result.Result;
+         File.Create(item.FullPath);
       }
-      return itm;
+      return item;
    }
 
    /// <summary>
@@ -172,24 +113,7 @@ public class ClientCatalogItem : ICatalogItem
    /// <returns>return found Item by id (Guid)</returns>
    public async Task<ItemInfo?> GetItemAsync(Guid id)
    {
-      _Client.ResultsLog.Clear();
-
-      QueryStringBuilder pars = new QueryStringBuilder();
-      pars.Add(QueryStringTag.SessionId, _Client.LastSessionId);
-      pars.Add(CatalogBaseClient.TAG_ITEM_ID, _Client.LastSessionId);
-      ItemInfo result = null;
-
-      var req = CatalogBaseClient.URI_ITEM_ID + pars.ToString();
-      try
-      {
-         result = await _Client.Client.GetDataFromJsonAsync<ItemInfo>(req);
-      }
-      catch (Exception ex)
-      {
-         _Client.ResultsLog.Failed(ex);
-      }
-
-      return result;
+      return GetItem(id);
    }
 
    /// <summary>
@@ -199,13 +123,9 @@ public class ClientCatalogItem : ICatalogItem
    /// <returns>return found Item by id (Guid)</returns>
    public ItemInfo GetItem(Guid id)
    {
-      ItemInfo? itm = null;
-      Task<ItemInfo> result = GetItemAsync(id);
-      result.Wait();
-      if (result.Status == TaskStatus.RanToCompletion)
-      {
-         itm = result.Result;
-      }
+      _Client.ResultsLog.Clear();
+      var itms = _Client.Cataloger.GetItems();
+      var itm = itms.Find(x => x.Id == id);
       return itm;
    }
 
@@ -216,24 +136,7 @@ public class ClientCatalogItem : ICatalogItem
    /// <returns>return found Item by path name</returns>
    public async Task<ItemInfo> GetItemByPathAsync(string name)
    {
-      _Client.ResultsLog.Clear();
-
-      QueryStringBuilder pars = new QueryStringBuilder();
-      pars.Add(QueryStringTag.SessionId, _Client.LastSessionId);
-      pars.Add(CatalogBaseClient.TAG_ITEM_PATH, name);
-      ItemInfo result = null;
-
-      var req = CatalogBaseClient.URI_ITEM_PATH + pars.ToString();
-      try
-      {
-         result = await _Client.Client.GetDataFromJsonAsync<ItemInfo>(req);
-      }
-      catch (Exception ex)
-      {
-         _Client.ResultsLog.Failed(ex);
-      }
-
-      return result;
+      return GetItemByPath(name);
    }
 
    /// <summary>
@@ -243,13 +146,9 @@ public class ClientCatalogItem : ICatalogItem
    /// <returns>return found Item by path name</returns>
    public ItemInfo GetItemByPath(string name)
    {
-      ItemInfo? itm = null;
-      Task<ItemInfo> result = GetItemByPathAsync(name);
-      result.Wait();
-      if (result.Status == TaskStatus.RanToCompletion)
-      {
-         itm = result.Result;
-      }
+      _Client.ResultsLog.Clear();
+      var itms = _Client.Cataloger.GetItems();
+      var itm = itms.Find(x => x.FullPath == name);
       return itm;
    }
 
@@ -260,8 +159,6 @@ public class ClientCatalogItem : ICatalogItem
    /// <returns>request status is returned</returns>
    public async Task<RequestStatus> DeleteItemAsync(Guid itemId)
    {
-      _Client.ResultsLog.Clear();
-
       QueryStringBuilder pars = new QueryStringBuilder();
       pars.Add(QueryStringTag.SessionId, _Client.LastSessionId);
       pars.Add(CatalogBaseClient.TAG_ITEM_ID, itemId.ToString());
@@ -295,20 +192,25 @@ public class ClientCatalogItem : ICatalogItem
    /// <param name="id">id (Guid) of item to delete</param>
    public RequestStatus DeleteItem(Guid id)
    {
-      RequestStatus response = RequestStatus.Unknown;
-      Task<RequestStatus> result = DeleteItemAsync(id);
-      result.Wait();
-      if (result.Status == TaskStatus.RanToCompletion)
+      _Client.ResultsLog.Clear();
+      var response = RequestStatus.Unknown;
+      try
       {
-         response = result.Result;
-         if (response == RequestStatus.Failed)
+         var itm = GetItem(id);
+         if (itm != null)
          {
-            _Client.ResultsLog.Failed(RequestStatus.Failed.ToString());
+            if (File.Exists(itm.FullPath))
+            {
+               _Client.Cataloger.DeleteItem(itm.FullPath);
+               File.Delete(itm.FullPath);
+            }
          }
-         else
-         {
-            _Client.ResultsLog.Succeeded();
-         }
+         response = RequestStatus.Completed;
+      }
+      catch (Exception ex)
+      {
+         _Client.ResultsLog.Failed(ex);
+         response = RequestStatus.Failed;
       }
       return response;
    }
@@ -329,18 +231,7 @@ public class ClientCatalogItem : ICatalogItem
    public async Task<ItemInfo> CreateBranchAsync(
       string path, string? description = null, Guid? containerId = null)
    {
-      ItemInfo item = new ItemInfo();
-      item.FullPath = path;
-      item.Description = description;
-      item.ContainerId = containerId.HasValue ? containerId.Value :
-         _Client.CurrentContainer.Id;
-      item.ItemType = DataObjects.Trees.TreeItemType.Branch;
-
-      CatalogPathItem pitem = new CatalogPathItem(item);
-
-      ItemInfo ritem = await AddItemAsync(pitem.Item);
-
-      return ritem;
+      return CreateBranch(path, description, containerId);
    }
 
    /// <summary>
@@ -351,14 +242,17 @@ public class ClientCatalogItem : ICatalogItem
    public ItemInfo? CreateBranch(
       string path, string? description = null, Guid? containerId = null)
    {
-      ItemInfo? item = null;
-      Task<ItemInfo?> result =
-         CreateBranchAsync(path, description, containerId.Value);
-      result.Wait();
-      if (result.Status == TaskStatus.RanToCompletion)
-      {
-         item = result.Result;
-      }
+      ItemInfo item = new ItemInfo();
+      item.FullPath = path;
+      item.Description = description;
+      item.ContainerId = containerId.HasValue ? containerId.Value :
+         _Client.CurrentContainer.Id;
+      item.ItemType = DataObjects.Trees.TreeItemType.Branch;
+
+      CatalogPathItem pitem = new CatalogPathItem(item);
+
+      _Client.Cataloger.AddItem(pitem);
+
       return item;
    }
 
@@ -383,24 +277,7 @@ public class ClientCatalogItem : ICatalogItem
    /// <exception cref="NotImplementedException"></exception>
    public async Task<List<ItemInfo?>> GetBranchAsync(string? path = null)
    {
-      _Client.ResultsLog.Clear();
-
-      QueryStringBuilder pars = new QueryStringBuilder();
-      pars.Add(QueryStringTag.SessionId, _Client.LastSessionId);
-      pars.Add(CatalogBaseClient.TAG_ITEM_PATH, path);
-      List<ItemInfo> item = null;
-
-      var req = CatalogBaseClient.URI_BRANCH_ITEMS + pars.ToString();
-      try
-      {
-         item = await _Client.Client.GetDataFromJsonAsync<List<ItemInfo>>(req);
-      }
-      catch (Exception ex)
-      {
-         _Client.ResultsLog.Failed(ex);
-      }
-
-      return item;
+      return GetBranch(path);
    }
 
    /// <summary>
@@ -410,14 +287,17 @@ public class ClientCatalogItem : ICatalogItem
    /// <returns>created item is returned, else null</returns>
    public List<ItemInfo?> GetBranch(string? path)
    {
-      List<ItemInfo?>? items = null;
-      Task<List<ItemInfo?>> result = GetBranchAsync(path);
-      result.Wait();
-      if (result.Status == TaskStatus.RanToCompletion)
+      _Client.ResultsLog.Clear();
+      var list = _Client.Cataloger.GetItems();
+      List<ItemInfo?> oitems = new List<ItemInfo?>();
+      foreach (var item in list)
       {
-         items = result.Result;
+         if (Regex.IsMatch(path, item.FullPath + "*"))
+         {
+            oitems.Add(item);
+         }
       }
-      return items;
+      return oitems;
    }
 
    #endregion

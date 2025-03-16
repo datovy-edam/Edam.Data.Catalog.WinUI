@@ -39,7 +39,7 @@ public class CatalogInstance
             case EDAM_FILE_SYSTEM_CATALOG:
                _CatalogName = baseUri;
                results.Instance = 
-                  new CatalogFileSystemClient(sessionId, baseUri);
+                  new CatalogFileSystemClient(sessionId, baseUri, null);
                results.Succeeded();
                break;
             default:

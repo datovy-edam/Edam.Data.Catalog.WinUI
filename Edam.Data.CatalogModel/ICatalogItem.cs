@@ -17,9 +17,6 @@ public interface ICatalogItem
    ItemInfo CreateBranch(string path, string? description = null,
       Guid? containerId = null);
 
-   ItemInfo CreateLeaf(string path, string name,
-      Guid? id = null, string? description = null, string? dataValue = null);
-
    ItemInfo CreateRootItem(Guid? containerId = null);
 
    Task<ItemInfo> GetContainerRootItemAsync(Guid id);

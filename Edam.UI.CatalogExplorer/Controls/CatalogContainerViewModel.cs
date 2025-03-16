@@ -54,7 +54,7 @@ public class CatalogContainerViewModel : ObservableObject
 
         EventCode added = EventCode.Success;
         var description = Edam.Text.Convert.ToProperCase(name);
-        var container = CatalogBase.Catalog.CatalogService.
+        var container = CatalogBase.Catalog.CatalogService.Container.
             EnlistContainer(name, description);
         if (container == null || 
             String.IsNullOrWhiteSpace(container.ContainerId))
@@ -77,7 +77,8 @@ public class CatalogContainerViewModel : ObservableObject
     public async Task InitializeContainersAsync()
     {
         DataSource.Clear();
-        var lst = await CatalogBase.Catalog.CatalogService.GetContainersAsync();
+        var lst = await CatalogBase.Catalog.
+           CatalogService.Container.GetContainersAsync();
 
         foreach(var item in lst)
         {

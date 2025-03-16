@@ -10,6 +10,8 @@ namespace Edam.Data.CatalogModel;
 
 public interface ICatalogBaseClient
 {
+   CatalogTreeBuilder Cataloger { get; }
+
    string BaseURI { get; }
    string LastSessionId { get; }
    string ConnectionString { get; }

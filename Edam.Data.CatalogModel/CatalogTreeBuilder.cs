@@ -1,4 +1,5 @@
 ﻿using Edam.DataObjects.Trees;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,6 +7,8 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.XPath;
+
+// -----------------------------------------------------------------------------
 
 namespace Edam.Data.CatalogModel;
 
@@ -15,6 +18,9 @@ namespace Edam.Data.CatalogModel;
 public class CatalogTreeBuilder
 {
    private int _ItemCount = 0;
+
+   private List<CatalogPathItem> _pathItems;
+   private List<ItemInfo> _items;
 
    private ICatalogService _Service;
    private CatalogInfo _CatalogInfo;
@@ -26,6 +32,100 @@ public class CatalogTreeBuilder
       _Service = service;
       _CatalogInfo = catalog;
    }
+
+   #region -- 4.00 - Items 
+
+   /// <summary>
+   /// Get Items within the builder dictionary.
+   /// </summary>
+   /// <param name="init">true if get a fresh list</param>
+   /// <returns>returns the list of Path Items</returns>
+   public List<CatalogPathItem> GetPathItems(bool init = false)
+   {
+      if (_pathItems == null || init)
+      {
+         _pathItems = _Dictionary.Values.ToList<CatalogPathItem>();
+      }
+      return _pathItems;
+   }
+
+   /// <summary>
+   /// Get Items within the builder dictionary.
+   /// </summary>
+   /// <param name="init">true if get a fresh list</param>
+   /// <returns>returns the list of ItemInfoes</returns>
+   public List<ItemInfo> GetItems(bool init = false)
+   {
+      var pitems = GetPathItems(init);
+      _items = new List<ItemInfo>();
+      foreach (var item in pitems)
+      {
+         _items.Add(item.Item);
+      }
+      return _items;
+   }
+
+   /// <summary>
+   /// Get an Item 
+   /// </summary>
+   /// <param name="path"></param>
+   /// <returns></returns>
+   public ItemInfo GetItem(string path)
+   {
+      CatalogPathItem value = null;
+      if (!_Dictionary.TryGetValue(path, out value))
+      {
+         return value.Item;
+      }
+      return null;
+   }
+
+   /// <summary>
+   /// Get an Item 
+   /// </summary>
+   /// <param name="id"></param>
+   /// <returns></returns>
+   public CatalogPathItem GetItem(Guid id)
+   {
+      var l = GetPathItems();
+      var itm = l.Find(l => l.Item.Id == id);
+      return itm;
+   }
+
+   /// <summary>
+   /// Add item into the dictionary.
+   /// </summary>
+   /// <param name="item"></param>
+   public void AddItem(CatalogPathItem item)
+   {
+      CatalogPathItem value;
+      if (!_Dictionary.TryGetValue(item.Full, out value))
+      {
+         _Dictionary.Add(item.Item.FullPath, item);
+      }
+   }
+
+   /// <summary>
+   /// Delete Item from the builder dictionary.
+   /// </summary>
+   /// <param name="path">path to remove from dictionary</param>
+   public void DeleteItem(string path)
+   {
+      _Dictionary.Remove(path);
+   }
+
+   /// <summary>
+   /// 
+   /// </summary>
+   /// <param name="item"></param>
+   /// <returns></returns>
+   public CatalogPathItem ToPathItem(ItemInfo item)
+   {
+      CatalogPathItem pitem = new CatalogPathItem(item);
+      return pitem;
+   }
+
+   #endregion
 
    /// <summary>
    /// Create item.

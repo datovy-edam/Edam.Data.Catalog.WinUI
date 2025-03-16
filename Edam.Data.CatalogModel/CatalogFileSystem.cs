@@ -49,35 +49,44 @@ public class CatalogFileSystem
    }
 
    /// <summary>
-   /// 
+   /// Prepare builder asynchrolously by visiting each File System entry
+   /// and inserting it into the builder internal dictionary.
    /// </summary>
-   /// <param name="item"></param>
-   /// <param name="builder"></param>
-   /// <returns></returns>
-   public static async Task<CatalogTreeBuilder> FileSystemToCatalogAsync(
+   /// <param name="item">root file system folder item</param>
+   /// <param name="builder">builder instance</param>
+   /// <returns>preapred builder instance is returned</returns>
+   public static async Task<CatalogTreeBuilder> PrepareBuilderAsync(
       FolderFileItemInfo item, CatalogTreeBuilder? builder)
    {
       var citem = await builder.GetItemAsync(item.Full);
       foreach(var child in item.Children)
       {
-          await FileSystemToCatalogAsync(child, builder);
+          await PrepareBuilderAsync(child, builder);
       }
       return builder;
    }
 
    /// <summary>
-   /// 
+   /// Read File System from given start folder path and store results in
+   /// a CatalogTreeBuilder asynchronously.
    /// </summary>
-   /// <param name="folderPath"></param>
-   /// <param name="builder"></param>
-   public static async void FileSystemToCatalogAsync(
-      string folderPath, CatalogTreeBuilder? builder)
+   /// <param name="folderPath">root folder path</param>
+   /// <param name="builder">builder instance, if null a new one will be
+   /// created</param>
+   /// <returns>instance of CatalogTreeBuilder is returned</returns>
+   public static async Task<CatalogTreeBuilder?> FileSystemToCatalogAsync(
+      string folderPath, CatalogTreeBuilder? builder = null)
    {
-      var results = GetFileSystemItems(folderPath);
-      if (results.Success)
+      CatalogTreeBuilder? tbuilder = builder ?? null;
+      if (tbuilder != null)
       {
-         await FileSystemToCatalogAsync(results.Instance, builder);
+         var results = GetFileSystemItems(folderPath);
+         if (results.Success)
+         {
+            await PrepareBuilderAsync(results.Instance, tbuilder);
+         }
       }
+      return tbuilder;
    }
 
 }

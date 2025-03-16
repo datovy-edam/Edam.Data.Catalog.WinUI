@@ -59,7 +59,7 @@ public class CatalogServiceHelper
 
       if (results.Success)
       {
-         results.Instance.SetContainer(_SessionId, "");
+         results.Instance.Container.SetContainer(_SessionId, "");
          return results.Instance;
       }
       return null;
