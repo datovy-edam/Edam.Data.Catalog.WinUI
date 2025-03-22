@@ -58,7 +58,7 @@ public class CatalogFileSystem
    public static async Task<CatalogTreeBuilder> PrepareBuilderAsync(
       FolderFileItemInfo item, CatalogTreeBuilder? builder)
    {
-      var citem = await builder.GetItemAsync(item.Full);
+      var citem = await builder.GetItemAsync(item);
       foreach(var child in item.Children)
       {
           await PrepareBuilderAsync(child, builder);

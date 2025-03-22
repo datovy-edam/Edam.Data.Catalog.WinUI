@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Edam.Data.CatalogDb;
 
+
 public class CatalogItem : ICatalogItem
 {
 

@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 using Edam.DataObjects.Medias;
 using Edam.DataObjects.Trees;
 using Edam.InOut;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+
+// -----------------------------------------------------------------------------
 
 namespace Edam.Data.CatalogModel
 {
@@ -23,6 +24,18 @@ namespace Edam.Data.CatalogModel
       public CatalogItemInfo? TreeItem { get; set; } = null;
 
       public new CatalogPathItem? Parent { get; set; } = null;
+
+      /// <summary>
+      /// The root full path incuding the driver-name.
+      /// </summary>
+      public string RootFullPath
+      {
+         get
+         {
+            return Item == null ? 
+               string.Empty : Item.FullPath;
+         }
+      }
 
       /// <summary>
       /// Initialize a catalog path based on a file item.
@@ -47,6 +60,23 @@ namespace Edam.Data.CatalogModel
          item.ItemId = Item.Id;
          item.Name = Item.Name;
          item.Data = data;
+
+         return item;
+      }
+
+      /// <summary>
+      /// To Item Data...
+      /// </summary>
+      /// <param name="data">data</param>
+      /// <returns>an instance of ItemData is returned</returns>
+      public ItemDataInfo ToItemData(string data)
+      {
+         ItemDataInfo item = new ItemDataInfo();
+         item.ContentTypeId = ContentType;
+         //item.Item = Item;
+         item.ItemId = Item.Id;
+         item.Name = Item.Name;
+         item.DataText = data;
 
          return item;
       }

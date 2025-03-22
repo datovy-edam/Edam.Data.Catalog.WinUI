@@ -93,15 +93,20 @@ public class CatalogFileSystemItem : ICatalogItem
    /// <summary>
    /// Add Item.
    /// </summary>
+   /// <remarks>
+   /// Items full path names should not include the root.
+   /// </remarks>
    /// <param name="item">item to ask</param>
    /// <returns>created item is returned, else null</returns>
    public ItemInfo AddItem(ItemInfo item)
    {
       _Client.ResultsLog.Clear();
       // try to find the item in the file system..
-      if (!File.Exists(item.FullPath))
+      var pathname = _Client.Cataloger.ExtendFullPathName(item);
+      if (!Directory.Exists(pathname))
       {
-         File.Create(item.FullPath);
+         Directory.CreateDirectory(pathname);
+         _Client.Cataloger.CreateRegisterItem(item);
       }
       return item;
    }
@@ -142,14 +147,13 @@ public class CatalogFileSystemItem : ICatalogItem
    /// <summary>
    /// Get Item.
    /// </summary>
-   /// <param name="name">path name</param>
+   /// <param name="path">path name</param>
    /// <returns>return found Item by path name</returns>
-   public ItemInfo GetItemByPath(string name)
+   public ItemInfo GetItemByPath(string path)
    {
       _Client.ResultsLog.Clear();
-      var itms = _Client.Cataloger.GetItems();
-      var itm = itms.Find(x => x.FullPath == name);
-      return itm;
+      var item = _Client.Cataloger.GetPathItem(path);
+      return item != null ? item.Item : null;
    }
 
    /// <summary>
@@ -159,30 +163,7 @@ public class CatalogFileSystemItem : ICatalogItem
    /// <returns>request status is returned</returns>
    public async Task<RequestStatus> DeleteItemAsync(Guid itemId)
    {
-      QueryStringBuilder pars = new QueryStringBuilder();
-      pars.Add(QueryStringTag.SessionId, _Client.LastSessionId);
-      pars.Add(CatalogBaseClient.TAG_ITEM_ID, itemId.ToString());
-      RequestStatus result = RequestStatus.Unknown;
-
-      var req = CatalogBaseClient.URI_ITEM_ID + pars.ToString();
-      try
-      {
-         var response = await _Client.Client.DeleteAsync<RequestResponseInfo>(req);
-         if (response != null && response.Success)
-         {
-            result = response.Status;
-         }
-         else
-         {
-            result = RequestStatus.Failed;
-         }
-      }
-      catch (Exception ex)
-      {
-         _Client.ResultsLog.Failed(ex);
-      }
-
-      return result;
+      return DeleteItem(itemId);
    }
 
    /// <summary>
@@ -199,10 +180,11 @@ public class CatalogFileSystemItem : ICatalogItem
          var itm = GetItem(id);
          if (itm != null)
          {
-            if (File.Exists(itm.FullPath))
+            var pathname = _Client.Cataloger.ExtendFullPathName(itm);
+            if (Directory.Exists(pathname))
             {
                _Client.Cataloger.DeleteItem(itm.FullPath);
-               File.Delete(itm.FullPath);
+               Directory.Delete(pathname);
             }
          }
          response = RequestStatus.Completed;
@@ -237,21 +219,25 @@ public class CatalogFileSystemItem : ICatalogItem
    /// <summary>
    /// Add Data Item.
    /// </summary>
-   /// <param name="item">item to ask</param>
+   /// <param name="path">folder/branch path not including root folder
+   /// subpath</param>
+   /// <param name="description">item description</param>
+   /// <param name="containerId">target container, else currenc container
+   /// will be used</param>
    /// <returns>created item is returned, else null</returns>
    public ItemInfo? CreateBranch(
       string path, string? description = null, Guid? containerId = null)
    {
-      ItemInfo item = new ItemInfo();
-      item.FullPath = path;
-      item.Description = description;
-      item.ContainerId = containerId.HasValue ? containerId.Value :
-         _Client.CurrentContainer.Id;
-      item.ItemType = DataObjects.Trees.TreeItemType.Branch;
+      ItemInfo item = new()
+      {
+         FullPath = path,
+         Description = description,
+         ContainerId = containerId.HasValue ? containerId.Value :
+            _Client.CurrentContainer.Id,
+         ItemType = DataObjects.Trees.TreeItemType.Branch
+      };
 
-      CatalogPathItem pitem = new CatalogPathItem(item);
-
-      _Client.Cataloger.AddItem(pitem);
+      AddItem(item);
 
       return item;
    }

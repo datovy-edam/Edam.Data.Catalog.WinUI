@@ -86,7 +86,7 @@ app.MapGet("/catalogservice/container/list", (string sessionId) =>
 
 // get container enlisted details
 app.MapGet("/catalogservice/container/enlist", (
-   string sessionId, string containerId, string description) =>
+   string sessionId, string containerId, string description, string baseUri) =>
 {
    WebAppService.SetupSession(sessionId);
    if (!WebAppService.VerifySessionId(sessionId))
@@ -94,7 +94,7 @@ app.MapGet("/catalogservice/container/enlist", (
       return new ContainerInfo();
    }
    return appService.CatalogSystem.Instance.Container.EnlistContainer(
-      containerId, description);
+      containerId, description, baseUri);
 });
 
 // get container delisted details

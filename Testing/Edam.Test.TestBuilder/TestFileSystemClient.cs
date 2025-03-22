@@ -2,11 +2,14 @@
 using Edam.Data.CatalogService;
 using Edam.Test.TestCatalogLibrary;
 
+// -----------------------------------------------------------------------------
+
 namespace Edam.Test.TestBuilder;
 
 [TestClass]
 public sealed class TestFileSystemClient
 {
+   public const string TEMP_TEST_FOLDER = "d:/temp/test/";
 
    [TestInitialize]
    public void InitializeInstances()
@@ -17,10 +20,17 @@ public sealed class TestFileSystemClient
    [TestMethod]
    public void TestCatalogClientInitialization()
    {
-      string fileSystemPath = "";
-      var container = AppHelper.CatalogInstance.Container;
-      CatalogFileSystemClient client = new CatalogFileSystemClient(
-         Guid.NewGuid().ToString(), fileSystemPath, container);
+      string fileSystemPath = TEMP_TEST_FOLDER;
+      var client = CatalogFileFolderClient.GetClient(fileSystemPath);
+      Assert.IsNotNull(client);
+   }
+
+   [TestMethod]
+   public void TestGetItemData()
+   {
+      string fileSystemPath = TEMP_TEST_FOLDER;
+      var client = CatalogFileFolderClient.GetClient(fileSystemPath);
+      client.Item.GetBranch("");
    }
 
 }

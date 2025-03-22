@@ -28,12 +28,21 @@ public class CatalogFileSystemClient :
 
    #region -- 1.00 - Fields and Properties declration/definitions
 
+   public const string FILE_SYSTEM = "File System";
+
    protected CatalogInfo _catalog;
    protected string _defaultRootFileFolder;
+   protected CatalogPathItem _rootItem;
    protected FolderFileItemInfo? _RootItem;
+
+   public object Instance
+   {
+      get { return this; }
+   }
+
    public ItemInfo RootItem
    {
-      get { return null; }
+      get { return _catalog.RootItem; }
    }
 
    #endregion
@@ -43,6 +52,7 @@ public class CatalogFileSystemClient :
       string sessionId, string baseUri, ICatalogContainer container) : 
       base(sessionId, baseUri)
    {
+      _BaseURI = baseUri;
       if (String.IsNullOrWhiteSpace(baseUri))
       {
          _defaultRootFileFolder = AppSettings.GetSectionString(
@@ -52,10 +62,53 @@ public class CatalogFileSystemClient :
             _defaultRootFileFolder = _defaultRootFileFolder.Replace("\\", "/");
          }
       }
+      else
+      {
+         _defaultRootFileFolder = baseUri;
+      }
+
+      // try to find a container based on this base URI...
+      var cnts = container.GetContainers();
+      var fcontainer = cnts.Find(
+         (x) => x.ContainerURI == _defaultRootFileFolder);
+      if (fcontainer == null)
+      {
+         // create a new container for given URI
+         fcontainer = container.EnlistContainer(
+            Guid.NewGuid().ToString(), FILE_SYSTEM + " Container",
+            _defaultRootFileFolder);
+      }
+      else
+      {
+         container.SetContainer(sessionId, fcontainer.ContainerId);
+      }
+
+      CurrentContainer = fcontainer;
 
       // use given container management instance...
       Container = container;
       Item = new CatalogFileSystemItem(this);
+
+      // get/create root item
+      ItemInfo rootItem = new()
+      {
+         ContainerId = CurrentContainer.Id,
+         Id = Guid.NewGuid(),
+         Container = CurrentContainer,
+         Description = FILE_SYSTEM + " Entry",
+         FullPath = _defaultRootFileFolder,
+         ItemType = DataObjects.Trees.TreeItemType.Branch
+      };
+      rootItem.Name = rootItem.Id.ToString();
+
+      //var _catalog = new CatalogItem(this, this._builder.);
+      //_catalog.Add(this.RootTreeItem);
+      _rootItem = new CatalogPathItem(rootItem);
+      _rootItem.TreeItem = new CatalogItemInfo();
+      _rootItem.TreeItem.Name = "(root)";
+      _rootItem.TreeItem.Type = DataObjects.Trees.TreeItemType.Branch;
+
+      // finally, setup Item Data
       ItemData = new CatalogFileSystemItemData(this);
 
       InitializeFileItems(_defaultRootFileFolder);
@@ -69,10 +122,12 @@ public class CatalogFileSystemClient :
    public async void InitializeFileItems(string baseUri)
    {
       _catalog = new CatalogInfo(this, String.Empty);
+      _catalog.RootPathItem = _rootItem;
       CatalogTreeBuilder builder = new CatalogTreeBuilder(this, _catalog);
+      builder.RegisterRootItem(_rootItem);
+      Cataloger = builder;
       _builder = await CatalogFileSystem.FileSystemToCatalogAsync(
          baseUri, builder);
-
    }
 
    #endregion

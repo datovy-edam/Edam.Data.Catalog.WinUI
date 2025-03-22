@@ -1,4 +1,5 @@
 ﻿using Edam.DataObjects.Trees;
+using Edam.InOut;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,9 @@ namespace Edam.Data.CatalogModel;
 /// </summary>
 public class CatalogTreeBuilder
 {
+
+   #region -- 4.00 - Fields and Properties...
+
    private int _ItemCount = 0;
 
    private List<CatalogPathItem> _pathItems;
@@ -24,16 +28,23 @@ public class CatalogTreeBuilder
 
    private ICatalogService _Service;
    private CatalogInfo _CatalogInfo;
-   private Dictionary<string, CatalogPathItem>? _Dictionary = 
-      new Dictionary<string, CatalogPathItem>();
+   private Dictionary<string, CatalogPathItem>? _Dictionary;
+
+   public Dictionary<string, CatalogPathItem>? Dictionary
+   {
+      get { return _Dictionary; }
+   }
 
    public CatalogTreeBuilder(ICatalogService service, CatalogInfo catalog)
-   { 
+   {
+      _Dictionary = catalog.CatalogDictionary ??
+         new Dictionary<string, CatalogPathItem>();
       _Service = service;
       _CatalogInfo = catalog;
    }
 
-   #region -- 4.00 - Items 
+   #endregion
+   #region -- 4.00 - Items Support and Management
 
    /// <summary>
    /// Get Items within the builder dictionary.
@@ -70,14 +81,28 @@ public class CatalogTreeBuilder
    /// </summary>
    /// <param name="path"></param>
    /// <returns></returns>
-   public ItemInfo GetItem(string path)
+   public CatalogPathItem GetPathItem(string path)
    {
       CatalogPathItem value = null;
       if (!_Dictionary.TryGetValue(path, out value))
       {
-         return value.Item;
+         return value;
       }
       return null;
+   }
+
+   /// <summary>
+   /// Get Leaf Items within the builder dictionary.
+   /// </summary>
+   /// <param name="init">true if get a fresh list</param>
+   /// <returns>returns the list of Path Items</returns>
+   public List<CatalogPathItem> GetLeafItems(Guid parentItemId)
+   {
+      List<CatalogPathItem> items = new List<CatalogPathItem>();
+      var l = GetItems();
+      //l.FindAll((x) => x.ItemType == TreeItemType.Leaf &&
+      //   x.Item)
+      return items;
    }
 
    /// <summary>
@@ -119,13 +144,50 @@ public class CatalogTreeBuilder
    /// </summary>
    /// <param name="item"></param>
    /// <returns></returns>
-   public CatalogPathItem ToPathItem(ItemInfo item)
+   //public CatalogPathItem ToPathItem(ItemInfo item)
+   //{
+   //   CatalogPathItem pitem = new CatalogPathItem(item);
+   //   return pitem;
+   //}
+
+
+   /// <summary>
+   /// Get extended given path.
+   /// </summary>
+   /// <param name="item">item whose name is to be extended</param>
+   /// <returns>extended path name is returned</returns>
+   public string ExtendPathName(string path)
    {
-      CatalogPathItem pitem = new CatalogPathItem(item);
-      return pitem;
+      return _CatalogInfo.RootPathItem.DriverName + path;
+   }
+
+   /// <summary>
+   /// Get fully extended path name based on given Item.
+   /// </summary>
+   /// <param name="item">item whose name is to be extended</param>
+   /// <returns>fully extended path name is returned</returns>
+   public string ExtendFullPathName(ItemInfo item)
+   {
+      return _CatalogInfo.RootPathItem.DriverName + item.FullPath;
+   }
+
+   /// <summary>
+   /// Find or Create a Registered Item...
+   /// </summary>
+   /// <param name="item">item</param>
+   /// <returns>Path Iterm instance is returned</returns>
+   public CatalogPathItem CreateRegisterItem(ItemInfo item)
+   {
+      if (!_Dictionary.TryGetValue(item.FullPath, out var ritem))
+      {
+         ritem = new CatalogPathItem(item);
+         _Dictionary.Add(item.FullPath, ritem);
+      }
+      return ritem;
    }
 
    #endregion
+   #region -- 4.00 - Create and Update Items...
 
    /// <summary>
    /// Create item.
@@ -187,6 +249,9 @@ public class CatalogTreeBuilder
       return pitem;
    }
 
+   #endregion
+   #region -- 4.00 - Item Registration...
+
    /// <summary>
    /// Update repository.
    /// </summary>
@@ -218,6 +283,24 @@ public class CatalogTreeBuilder
 
          await _Service.Item.AddItemAsync(pathItem.Item);
       }
+   }
+
+   /// <summary>
+   /// Register the root item will allow to set the root based on a path and
+   /// all child entries will be based on this root.  See FileSystem client.
+   /// </summary>
+   /// <param name="item">root item to register</param>
+   public void RegisterRootItem(CatalogPathItem item)
+   {
+      if (_Dictionary.Count > 0)
+      {
+         return;
+      }
+      if (_CatalogInfo != null && _CatalogInfo.RootPathItem == null)
+      {
+         _CatalogInfo.RootPathItem = item;
+      }
+      _Dictionary.Add(item.Full, item);
    }
 
    /// <summary>
@@ -293,6 +376,9 @@ public class CatalogTreeBuilder
 
       return parent;
    }
+
+   #endregion
+   #region -- 4.00 - Get / Fetch Item
 
    /// <summary>
    /// Get Catalog Item information from a File Item.
@@ -389,6 +475,51 @@ public class CatalogTreeBuilder
    }
 
    /// <summary>
+   /// Get Catalog Item information based on given folder-file instance.
+   /// </summary>
+   /// <param name="item">folder-file instance</param>
+   /// <returns>instance of catalog item is returned</returns>
+   public async Task<CatalogPathItem> GetItemAsync(FolderFileItemInfo item)
+   {
+      // if this is the root item just return
+      if (item.Full == _CatalogInfo.RootPathItem.RootFullPath)
+         return _CatalogInfo.RootPathItem;
+
+      string path = "/" + item.Full.Substring(
+         _CatalogInfo.RootPathItem.RootFullPath.Length);
+
+      // try to catalog and register the item
+      CatalogPathItem pitem = null;
+      ItemInfo fitem = new ItemInfo
+      {
+         ItemType = item.Type == ItemType.Folder ?
+            TreeItemType.Branch : TreeItemType.Leaf
+      };
+
+      var foundItem = await _Service.Item.GetItemByPathAsync(path);
+      if (foundItem != null)
+      {
+         fitem = foundItem;
+      }
+      else
+      {
+         fitem.FullPath = path;
+      }
+
+      pitem = new CatalogPathItem(fitem);
+      pitem.Parent = _CatalogInfo.RootPathItem;
+      if (foundItem == null)
+      {
+         var citem = await GetItemAsync(pitem);
+      }
+
+      return pitem;
+   }
+
+   #endregion
+   #region -- 4.00 - Path and Branch Support
+
+   /// <summary>
    /// Convert to a Catalog Path Item.
    /// </summary>
    /// <param name="item">file item to convert</param>
@@ -440,6 +571,9 @@ public class CatalogTreeBuilder
       }
    }
 
+   #endregion
+   #region -- 4.00 - Tree Builder methods...
+
    /// <summary>
    /// Build the tree based on the catalog items path
    /// </summary>
@@ -455,5 +589,7 @@ public class CatalogTreeBuilder
 
       await GetBranchAsync();
    }
+
+   #endregion
 
 }

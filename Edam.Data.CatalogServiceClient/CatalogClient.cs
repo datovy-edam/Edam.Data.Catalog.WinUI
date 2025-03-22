@@ -25,6 +25,11 @@ public partial class CatalogClient : CatalogBaseClient, ICatalogClient
 
    #region -- 1.00 - Fields and Properties declration/definitions
 
+   public object Instance
+   {
+      get { return this; }
+   }
+
    #endregion
    #region -- 1.50 - Constructure and Initialization
 

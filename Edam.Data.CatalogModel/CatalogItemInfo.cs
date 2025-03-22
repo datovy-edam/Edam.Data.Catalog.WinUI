@@ -39,6 +39,11 @@ public class CatalogItemInfo : TreeItem, ITreeItem
    #region -- 1.50 - Initialization
 
    // call CatalogTreeBuilder.CreateItem(FileItemInfo)...
+   public CatalogItemInfo() : base()
+   {
+      TypeText = TYPE_Catalog;
+      Parent = null;
+   }
 
    #endregion
    #region -- 4.00 - Catalog JSON Serialization Support

@@ -26,6 +26,11 @@ public class CatalogServiceInstance :
 
    protected CatalogContext? DbContext { get; set; } = null;
 
+   public object Instance
+   {
+      get { return this; }
+   }
+
    #endregion
    #region -- 1.50 - Initialization and Disposition
 

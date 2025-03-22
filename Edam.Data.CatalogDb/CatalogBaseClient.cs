@@ -73,6 +73,7 @@ public partial class CatalogBaseClient : ICatalogBaseClient
    public CatalogTreeBuilder Cataloger
    {
       get { return _builder; }
+      set { _builder = value; }
    }
 
    /// <summary>

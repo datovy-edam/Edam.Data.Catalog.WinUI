@@ -29,7 +29,7 @@ public class CatalogInfo
       get { return _CatalogService; }
    }
 
-   private HashSet<CatalogItemInfo?>? _Catalog;
+   //private HashSet<CatalogItemInfo?>? _Catalog;
 
    /// <summary>
    /// A dictionary based on the path for each item
@@ -42,10 +42,6 @@ public class CatalogInfo
    {
       get { return _CatalogDictionary; }
    }
-
-   //private ICatalogService? _CatalogInstance = null;
-
-   public TreeItem? CatalogEntry { get; set; } = null;
 
    /// <summary>
    /// File based Root item
@@ -94,10 +90,17 @@ public class CatalogInfo
       }
 
       // add catalog
-      _Catalog = new HashSet<CatalogItemInfo>();
-      _Catalog.Add(this.RootTreeItem);
+      //_Catalog = new HashSet<CatalogItemInfo>();
+      //_Catalog.Add(this.RootTreeItem);
 
       return this;
+   }
+
+   public void InitializeCatalog(CatalogTreeBuilder builder)
+   {
+      // add catalog
+      //_Catalog = new HashSet<CatalogItemInfo>();
+      //_Catalog.Add(this.RootTreeItem);
    }
 
    #endregion

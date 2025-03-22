@@ -11,12 +11,14 @@ namespace Edam.Data.CatalogModel;
 public interface ICatalogContainer
 {
 
-   Task<ContainerInfo> GetContainerAsync(string? containerId, bool checkId = true);
+   Task<ContainerInfo> GetContainerAsync(
+      string? containerId, bool checkId = true);
    ContainerInfo GetContainer(string? containerId, bool checkId = true);
    ContainerInfo GetContainer(Guid containerId);
 
    ContainerInfo SetContainer(string sessionId, string containerId);
-   ContainerInfo EnlistContainer(string containerId, string description);
+   ContainerInfo EnlistContainer(
+      string containerId, string description, string baseURI = null);
    ContainerInfo DelistContainer(string containerId);
 
    Task<List<ContainerInfo>> GetContainersAsync();

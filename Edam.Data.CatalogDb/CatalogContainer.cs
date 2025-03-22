@@ -219,8 +219,10 @@ public class CatalogContainer : ICatalogContainer
    /// </summary>
    /// <param name="containerId">container id</param>
    /// <param name="description">description</param>
+   /// <param name="baseUri">base URI</param>
    /// <returns>container info is returned</returns>
-   public ContainerInfo EnlistContainer(string containerId, string description)
+   public ContainerInfo EnlistContainer(
+      string containerId, string description, string baseUri = null)
    {
       ContainerInfo container = null;
       ResultLog results = new ResultLog();
@@ -242,6 +244,7 @@ public class CatalogContainer : ICatalogContainer
             container = new();
             container.ContainerId = containerId;
             container.Description = description;
+            container.ContainerURI = baseUri;
             DbContext.Containers.Add(container);
 
             // add root item

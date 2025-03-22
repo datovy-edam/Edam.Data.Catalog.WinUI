@@ -1,9 +1,11 @@
 ﻿using Edam.Data.CatalogDb;
 using Edam.Data.CatalogModel;
+using Edam.DataObjects;
 using Edam.DataObjects.Requests;
 using Edam.Text;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -50,7 +52,7 @@ public class CatalogFileSystemItemData: ICatalogItemData
    {
       _Client.ResultsLog.Clear();
       var itm = _Client.Cataloger.GetItem(item.Id);
-      File.WriteAllBytes(itm.FullPath, item.Data);
+      File.WriteAllBytes(itm.Item.FullPath, item.Data);
       return item;
    }
 
@@ -72,8 +74,12 @@ public class CatalogFileSystemItemData: ICatalogItemData
    public List<ItemDataInfo> GetItemData(Guid itemId)
    {
       _Client.ResultsLog.Clear();
-      var itm = _Client.Cataloger.GetItem(itemId);
-      return null;
+      var pitem = _Client.Cataloger.GetItem(itemId);
+      List<ItemDataInfo> ditem = new List<ItemDataInfo>();
+      var data = File.ReadAllBytes(pitem.Item.FullPath);
+      ItemDataInfo itemData = pitem.ToItemData(data);
+      ditem.Add(itemData);
+      return ditem;
    }
 
    /// <summary>
@@ -83,32 +89,7 @@ public class CatalogFileSystemItemData: ICatalogItemData
    /// <returns>request status (code) is returned</returns>
    public async Task<RequestStatus> DeleteItemDataAsync(Guid itemId)
    {
-      _Client.ResultsLog.Clear();
-
-      QueryStringBuilder pars = new QueryStringBuilder();
-      pars.Add(QueryStringTag.SessionId, _Client.LastSessionId);
-      pars.Add(CatalogBaseClient.TAG_ITEM_ID, itemId.ToString());
-      RequestStatus result = RequestStatus.Unknown;
-
-      var req = CatalogBaseClient.URI_ITEM_DATA_ITEM_ID + pars.ToString();
-      try
-      {
-         var response = await _Client.Client.DeleteAsync<RequestResponseInfo>(req);
-         if (response != null && response.Success)
-         {
-            result = response.Status;
-         }
-         else
-         {
-            result = RequestStatus.Failed;
-         }
-      }
-      catch (Exception ex)
-      {
-         _Client.ResultsLog.Failed(ex);
-      }
-
-      return result;
+      return DeleteItemData(itemId);
    }
 
    /// <summary>
@@ -118,19 +99,14 @@ public class CatalogFileSystemItemData: ICatalogItemData
    /// <param name="itemId">(guid) id</param>
    public RequestStatus DeleteItemData(Guid itemId)
    {
+      _Client.ResultsLog.Clear();
       RequestStatus response = RequestStatus.Unknown;
-      Task<RequestStatus> result = DeleteItemDataAsync(itemId);
-      result.Wait();
-      if (result.Status == TaskStatus.RanToCompletion)
+      var pitem = _Client.Cataloger.GetLeafItems(itemId);
+      if (pitem != null && pitem.Count > 0)
       {
-         response = result.Result;
-         if (response == RequestStatus.Failed)
+         foreach (var item in pitem)
          {
-            _Client.ResultsLog.Failed(RequestStatus.Failed.ToString());
-         }
-         else
-         {
-            _Client.ResultsLog.Succeeded();
+            File.Delete(item.Item.FullPath);
          }
       }
       return response;
@@ -143,32 +119,7 @@ public class CatalogFileSystemItemData: ICatalogItemData
    /// <returns>Request Status is returned</returns>
    public async Task<RequestStatus> DeleteDataAsync(Guid dataId)
    {
-      _Client.ResultsLog.Clear();
-
-      QueryStringBuilder pars = new QueryStringBuilder();
-      pars.Add(QueryStringTag.SessionId, _Client.LastSessionId);
-      pars.Add(CatalogBaseClient.TAG_ITEM_ID, dataId.ToString());
-      RequestStatus result = RequestStatus.Unknown;
-
-      var req = CatalogBaseClient.URI_DATA_ID + pars.ToString();
-      try
-      {
-         var response = await _Client.Client.DeleteAsync<RequestResponseInfo>(req);
-         if (response != null && response.Success)
-         {
-            result = response.Status;
-         }
-         else
-         {
-            result = RequestStatus.Failed;
-         }
-      }
-      catch (Exception ex)
-      {
-         _Client.ResultsLog.Failed(ex);
-      }
-
-      return result;
+      return DeleteData(dataId);
    }
 
    /// <summary>
@@ -178,20 +129,12 @@ public class CatalogFileSystemItemData: ICatalogItemData
    /// <returns>Request Status is returned</returns>
    public RequestStatus DeleteData(Guid dataId)
    {
+      _Client.ResultsLog.Clear();
       RequestStatus response = RequestStatus.Unknown;
-      Task<RequestStatus> result = DeleteDataAsync(dataId);
-      result.Wait();
-      if (result.Status == TaskStatus.RanToCompletion)
+      var pitem = _Client.Cataloger.GetItem(dataId);
+      if (pitem != null)
       {
-         response = result.Result;
-         if (response == RequestStatus.Failed)
-         {
-            _Client.ResultsLog.Failed(RequestStatus.Failed.ToString());
-         }
-         else
-         {
-            _Client.ResultsLog.Succeeded();
-         }
+         File.Delete(pitem.Item.FullPath);
       }
       return response;
    }
@@ -208,10 +151,11 @@ public class CatalogFileSystemItemData: ICatalogItemData
    public ItemDataInfo CreateDataLeaf(
       ItemInfo item, string name, Guid? dataId = null, byte[] dataValue = null)
    {
-      var data = ItemDataInfo.CreateDataLeaf(item.Id, name, dataId);
       var pitem = new CatalogPathItem(item);
-      data.ContentType = pitem.GetContentType();
-      return data;
+      var dataItem = pitem.ToItemData(dataValue);
+      dataItem.ContentType = pitem.GetContentType();
+      
+      return dataItem;
    }
 
    /// <summary>
@@ -226,11 +170,11 @@ public class CatalogFileSystemItemData: ICatalogItemData
    public ItemDataInfo CreateDataLeaf(
       ItemInfo item, string name, Guid? dataId = null, string dataValue = null)
    {
-      var data = ItemDataInfo.CreateDataLeaf(item.Id, name, dataId);
-      data.DataText = dataValue;
       var pitem = new CatalogPathItem(item);
-      data.ContentType = pitem.GetContentType();
-      return data;
+      var dataItem = pitem.ToItemData(dataValue);
+      dataItem.ContentType = pitem.GetContentType();
+
+      return dataItem;
    }
 
    /// <summary>
@@ -241,25 +185,7 @@ public class CatalogFileSystemItemData: ICatalogItemData
    /// <returns>instance of ItemDataInfo is returned</returns>
    public async Task<ItemDataInfo> GetDataByNameAsync(Guid itemId, string name)
    {
-      _Client.ResultsLog.Clear();
-
-      QueryStringBuilder pars = new QueryStringBuilder();
-      pars.Add(QueryStringTag.SessionId, _Client.LastSessionId);
-      pars.Add(CatalogBaseClient.TAG_ITEM_ID, itemId.ToString());
-      pars.Add(CatalogBaseClient.TAG_ITEM_NAME, itemId.ToString());
-      ItemDataInfo item = null;
-
-      var req = CatalogBaseClient.URI_ITEM_DATA_ITEM_NAME + pars.ToString();
-      try
-      {
-         item = await _Client.Client.GetDataFromJsonAsync<ItemDataInfo>(req);
-      }
-      catch (Exception ex)
-      {
-         _Client.ResultsLog.Failed(ex);
-      }
-
-      return item;
+      return GetDataByName(itemId, name);
    }
 
    /// <summary>
@@ -270,14 +196,12 @@ public class CatalogFileSystemItemData: ICatalogItemData
    /// <returns>instance of ItemDataInfo is returned</returns>
    public ItemDataInfo GetDataByName(Guid itemId, string name)
    {
-      ItemDataInfo? item = null;
-      Task<ItemDataInfo> result = GetDataByNameAsync(itemId, name);
-      result.Wait();
-      if (result.Status == TaskStatus.RanToCompletion)
-      {
-         item = result.Result;
-      }
-      return item;
+      _Client.ResultsLog.Clear();
+      var dataItems = GetItemData(itemId);
+      ItemDataInfo itemData = dataItems != null && dataItems.Count > 0 ?
+         dataItems[0] : null;
+
+      return itemData;
    }
 
    /// <summary>
@@ -287,24 +211,7 @@ public class CatalogFileSystemItemData: ICatalogItemData
    /// <returns>Instance of ItemDataInfo is returned</returns>
    public async Task<ItemDataInfo> GetDataAsync(Guid dataId)
    {
-      _Client.ResultsLog.Clear();
-
-      QueryStringBuilder pars = new QueryStringBuilder();
-      pars.Add(QueryStringTag.SessionId, _Client.LastSessionId);
-      pars.Add(CatalogBaseClient.TAG_DATA_ID, dataId.ToString());
-      ItemDataInfo item = null;
-
-      var req = CatalogBaseClient.URI_ITEM_DATA_ID + pars.ToString();
-      try
-      {
-         item = await _Client.Client.GetDataFromJsonAsync<ItemDataInfo>(req);
-      }
-      catch (Exception ex)
-      {
-         _Client.ResultsLog.Failed(ex);
-      }
-
-      return item;
+      return GetData(dataId);
    }
 
    /// <summary>
@@ -314,14 +221,12 @@ public class CatalogFileSystemItemData: ICatalogItemData
    /// <returns>Instance of ItemDataInfo is returned</returns>
    public ItemDataInfo GetData(Guid dataId)
    {
-      ItemDataInfo? item = null;
-      Task<ItemDataInfo> result = GetDataAsync(dataId);
-      result.Wait();
-      if (result.Status == TaskStatus.RanToCompletion)
-      {
-         item = result.Result;
-      }
-      return item;
+      _Client.ResultsLog.Clear();
+      var dataItems = GetItemData(dataId);
+      ItemDataInfo itemData = dataItems != null && dataItems.Count > 0 ?
+         dataItems[0] : null;
+
+      return itemData;
    }
 
    /// <summary>
