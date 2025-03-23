@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.XPath;
 
@@ -77,14 +78,14 @@ public class CatalogTreeBuilder
    }
 
    /// <summary>
-   /// Get an Item 
+   /// Get an Item.
    /// </summary>
    /// <param name="path"></param>
    /// <returns></returns>
    public CatalogPathItem GetPathItem(string path)
    {
       CatalogPathItem value = null;
-      if (!_Dictionary.TryGetValue(path, out value))
+      if (_Dictionary.TryGetValue(path.ToLower(), out value))
       {
          return value;
       }
@@ -106,6 +107,21 @@ public class CatalogTreeBuilder
    }
 
    /// <summary>
+   /// Get Leaf Items within the builder dictionary.
+   /// </summary>
+   /// <param name="init">true if get a fresh list</param>
+   /// <returns>returns the list of Path Items</returns>
+   public List<ItemInfo> GetItems(string path)
+   {
+      string fpath = path.ToLower();
+      List<ItemInfo> items = new List<ItemInfo>();
+      var l = GetItems();
+      var ritems = l.FindAll((x) => 
+         Regex.Match(x.FullPath.ToLower(), fpath + "*").Success);
+      return ritems;
+   }
+
+   /// <summary>
    /// Get an Item 
    /// </summary>
    /// <param name="id"></param>
@@ -124,9 +140,9 @@ public class CatalogTreeBuilder
    public void AddItem(CatalogPathItem item)
    {
       CatalogPathItem value;
-      if (!_Dictionary.TryGetValue(item.Full, out value))
+      if (!_Dictionary.TryGetValue(item.Full.ToLower(), out value))
       {
-         _Dictionary.Add(item.Item.FullPath, item);
+         _Dictionary.Add(item.Item.FullPath.ToLower(), item);
       }
    }
 
@@ -136,7 +152,11 @@ public class CatalogTreeBuilder
    /// <param name="path">path to remove from dictionary</param>
    public void DeleteItem(string path)
    {
-      _Dictionary.Remove(path);
+      var items = GetItems(path);
+      foreach (var item in items)
+      {
+         _Dictionary.Remove(item.FullPath.ToLower());
+      }
    }
 
    /// <summary>
@@ -168,7 +188,8 @@ public class CatalogTreeBuilder
    /// <returns>fully extended path name is returned</returns>
    public string ExtendFullPathName(ItemInfo item)
    {
-      return _CatalogInfo.RootPathItem.DriverName + item.FullPath;
+      return _CatalogInfo.RootPathItem.RootFullPath + 
+         item.FullPath.Substring(1);
    }
 
    /// <summary>
@@ -178,12 +199,12 @@ public class CatalogTreeBuilder
    /// <returns>Path Iterm instance is returned</returns>
    public CatalogPathItem CreateRegisterItem(ItemInfo item)
    {
-      if (!_Dictionary.TryGetValue(item.FullPath, out var ritem))
+      string path = item.FullPath.ToLower();
+      if (!_Dictionary.TryGetValue(path, out var pitem))
       {
-         ritem = new CatalogPathItem(item);
-         _Dictionary.Add(item.FullPath, ritem);
+         pitem = GetItem(item);
       }
-      return ritem;
+      return pitem;
    }
 
    #endregion
@@ -281,6 +302,10 @@ public class CatalogTreeBuilder
 
          pathItem.TreeItem.Title = pathItem.Item.Description;
 
+         // this looks like it makes no sence for a Leaf but what it does is
+         // to register the path in the repository, if the repository already
+         // exists like in a file system then Leafs need to be treaded with
+         // care in the AddItem method... (go there to look)
          await _Service.Item.AddItemAsync(pathItem.Item);
       }
    }
@@ -300,7 +325,7 @@ public class CatalogTreeBuilder
       {
          _CatalogInfo.RootPathItem = item;
       }
-      _Dictionary.Add(item.Full, item);
+      _Dictionary.Add(item.Full.ToLower(), item);
    }
 
    /// <summary>
@@ -341,9 +366,9 @@ public class CatalogTreeBuilder
 
          // add branch to registry
          var pathItem = new CatalogPathItem(item);
-         if (!_Dictionary.TryGetValue(path, out CatalogPathItem value))
+         if (!_Dictionary.TryGetValue(path.ToLower(), out CatalogPathItem value))
          {
-            _Dictionary.TryAdd(path, pathItem);
+            _Dictionary.TryAdd(path.ToLower(), pathItem);
 
             // setup tree item as needed
             if (pathItem.TreeItem == null)
@@ -391,10 +416,10 @@ public class CatalogTreeBuilder
       bool updateItem = false;
 
       // try to find, if not found try to add paths
-      if (!_Dictionary.TryGetValue(pathItem.Full, out CatalogPathItem item))
+      if (!_Dictionary.TryGetValue(pathItem.Full.ToLower(), out CatalogPathItem item))
       {
          // add full path for new item
-         _Dictionary.TryAdd(pathItem.Full, pathItem);
+         _Dictionary.TryAdd(pathItem.Full.ToLower(), pathItem);
          updateItem = true;
          item = pathItem;
       }
@@ -443,6 +468,23 @@ public class CatalogTreeBuilder
    {
       var pitem = new CatalogPathItem(item);
       var citem = await GetItemAsync(pitem);
+      return pitem;
+   }
+
+   /// <summary>
+   /// Get Catalog Item information from a File Item.
+   /// </summary>
+   /// <param name="item">file item</param>
+   /// <returns>instance of catalog item is returned</returns>
+   public CatalogPathItem GetItem(ItemInfo item)
+   {
+      var pitem = new CatalogPathItem(item);
+      var task = Task.Run(() => GetItemAsync(pitem));
+      task.Wait();
+      if (task.Status == TaskStatus.RanToCompletion)
+      {
+         var citem = task.Result;
+      }
       return pitem;
    }
 

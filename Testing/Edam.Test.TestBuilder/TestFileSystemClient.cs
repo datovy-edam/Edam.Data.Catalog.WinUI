@@ -1,6 +1,7 @@
 ﻿using Edam.Data.CatalogModel;
 using Edam.Data.CatalogService;
 using Edam.Test.TestCatalogLibrary;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 
 // -----------------------------------------------------------------------------
 
@@ -10,6 +11,8 @@ namespace Edam.Test.TestBuilder;
 public sealed class TestFileSystemClient
 {
    public const string TEMP_TEST_FOLDER = "d:/temp/test/";
+   public const string FOLDER_NEW_BRANCH = "/folder 1/newBranch";
+   public const string CHILD_FOLDER = "/folder 1/child 1";
 
    [TestInitialize]
    public void InitializeInstances()
@@ -26,11 +29,39 @@ public sealed class TestFileSystemClient
    }
 
    [TestMethod]
-   public void TestGetItemData()
+   public void TestBranchMethods()
    {
       string fileSystemPath = TEMP_TEST_FOLDER;
       var client = CatalogFileFolderClient.GetClient(fileSystemPath);
-      client.Item.GetBranch("");
+
+      // create branch
+      var itm1 = client.Item.CreateBranch(FOLDER_NEW_BRANCH);
+      var itm2 = client.Item.CreateBranch(CHILD_FOLDER + "/anotherNewBranch");
+
+      var itm3 = client.Item.GetBranch(FOLDER_NEW_BRANCH);
+      Assert.AreEqual(itm3.Count, 1);
+
+      // delete folder
+      var itm4 = client.Item.GetBranch(CHILD_FOLDER);
+      Assert.AreEqual(itm4.Count, 1);
+      client.Item.DeleteItem(itm4[0].Id);
+   }
+
+   [TestMethod]
+   public void TestItemDataMethods()
+   {
+      string fileSystemPath = TEMP_TEST_FOLDER;
+      var client = CatalogFileFolderClient.GetClient(fileSystemPath);
+
+      var itm1 = client.Item.CreateBranch(
+         FOLDER_NEW_BRANCH + "/testSample.txt");
+      var pitem = new CatalogPathItem(itm1);
+      var ditem = pitem.ToItemData("text sample");
+
+      client.ItemData.AddItem(ditem);
+
+      var itemData = client.ItemData.GetItemData(ditem.ItemId);
+      var status = client.ItemData.DeleteItemData(ditem.ItemId);
    }
 
 }

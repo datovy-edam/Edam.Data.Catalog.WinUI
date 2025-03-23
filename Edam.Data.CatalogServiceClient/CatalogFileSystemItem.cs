@@ -101,8 +101,27 @@ public class CatalogFileSystemItem : ICatalogItem
    public ItemInfo AddItem(ItemInfo item)
    {
       _Client.ResultsLog.Clear();
-      // try to find the item in the file system..
       var pathname = _Client.Cataloger.ExtendFullPathName(item);
+
+      // does branch already registered?
+      var fitem = _Client.Cataloger.GetPathItem(item.FullPath);
+      if (fitem != null)
+      {
+         return fitem.Item;
+      }
+
+      // is this a leaf?
+      if (item.ItemType == DataObjects.Trees.TreeItemType.Leaf)
+      {
+         if (!File.Exists(pathname))
+         {
+            // create an empty file...
+            File.WriteAllBytes(pathname, []);
+         }
+         return item;
+      }
+
+      // try to find the item in the file system..
       if (!Directory.Exists(pathname))
       {
          Directory.CreateDirectory(pathname);
@@ -156,6 +175,9 @@ public class CatalogFileSystemItem : ICatalogItem
       return item != null ? item.Item : null;
    }
 
+   #endregion
+   #region -- 4.00 - Delete Item methods...
+
    /// <summary>
    /// Delete Item Async.
    /// </summary>
@@ -184,7 +206,7 @@ public class CatalogFileSystemItem : ICatalogItem
             if (Directory.Exists(pathname))
             {
                _Client.Cataloger.DeleteItem(itm.FullPath);
-               Directory.Delete(pathname);
+               Directory.Delete(pathname, true);
             }
          }
          response = RequestStatus.Completed;
@@ -228,6 +250,14 @@ public class CatalogFileSystemItem : ICatalogItem
    public ItemInfo? CreateBranch(
       string path, string? description = null, Guid? containerId = null)
    {
+      // does branch already registered?
+      var fitem = _Client.Cataloger.GetPathItem(path);
+      if (fitem != null)
+      {
+         return fitem.Item;
+      }
+
+      // no item was found, register this new branch
       ItemInfo item = new()
       {
          FullPath = path,
@@ -237,9 +267,11 @@ public class CatalogFileSystemItem : ICatalogItem
          ItemType = DataObjects.Trees.TreeItemType.Branch
       };
 
-      AddItem(item);
+      var pitem = new CatalogPathItem(item);
 
-      return item;
+      var ritem = AddItem(item);
+
+      return ritem;
    }
 
    /// <summary>
@@ -256,32 +288,31 @@ public class CatalogFileSystemItem : ICatalogItem
    }
 
    /// <summary>
-   /// 
+   /// Get Branches asynchronously that its beginning match 
+   /// with given path pattern.
    /// </summary>
-   /// <param name="path"></param>
-   /// <returns></returns>
-   /// <exception cref="NotImplementedException"></exception>
+   /// <param name="item">item to ask</param>
+   /// <returns>created item is returned, else null</returns>
    public async Task<List<ItemInfo?>> GetBranchAsync(string? path = null)
    {
       return GetBranch(path);
    }
 
    /// <summary>
-   /// Add Data Item.
+   /// Get Branches that its beginning match with given path pattern.
    /// </summary>
    /// <param name="item">item to ask</param>
    /// <returns>created item is returned, else null</returns>
    public List<ItemInfo?> GetBranch(string? path)
    {
       _Client.ResultsLog.Clear();
-      var list = _Client.Cataloger.GetItems();
-      List<ItemInfo?> oitems = new List<ItemInfo?>();
-      foreach (var item in list)
+      List<ItemInfo?> oitems = new();
+
+      // does branch already registered?
+      var fitem = _Client.Cataloger.GetPathItem(path);
+      if (fitem != null)
       {
-         if (Regex.IsMatch(path, item.FullPath + "*"))
-         {
-            oitems.Add(item);
-         }
+         oitems.Add(fitem.Item);
       }
       return oitems;
    }

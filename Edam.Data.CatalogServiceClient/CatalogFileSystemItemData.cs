@@ -51,8 +51,9 @@ public class CatalogFileSystemItemData: ICatalogItemData
    public ItemDataInfo AddItem(ItemDataInfo item)
    {
       _Client.ResultsLog.Clear();
-      var itm = _Client.Cataloger.GetItem(item.Id);
-      File.WriteAllBytes(itm.Item.FullPath, item.Data);
+      var itm = _Client.Cataloger.GetItem(item.ItemId);
+      string path = _Client.Cataloger.ExtendFullPathName(itm.Item);
+      File.WriteAllBytes(path, item.Data);
       return item;
    }
 
@@ -76,7 +77,8 @@ public class CatalogFileSystemItemData: ICatalogItemData
       _Client.ResultsLog.Clear();
       var pitem = _Client.Cataloger.GetItem(itemId);
       List<ItemDataInfo> ditem = new List<ItemDataInfo>();
-      var data = File.ReadAllBytes(pitem.Item.FullPath);
+      string path = _Client.Cataloger.ExtendFullPathName(pitem.Item);
+      var data = File.ReadAllBytes(path);
       ItemDataInfo itemData = pitem.ToItemData(data);
       ditem.Add(itemData);
       return ditem;
@@ -101,13 +103,12 @@ public class CatalogFileSystemItemData: ICatalogItemData
    {
       _Client.ResultsLog.Clear();
       RequestStatus response = RequestStatus.Unknown;
-      var pitem = _Client.Cataloger.GetLeafItems(itemId);
-      if (pitem != null && pitem.Count > 0)
+      var pitem = _Client.Cataloger.GetItem(itemId);
+      if (pitem != null)
       {
-         foreach (var item in pitem)
-         {
-            File.Delete(item.Item.FullPath);
-         }
+         string path = _Client.Cataloger.ExtendFullPathName(pitem.Item);
+         File.Delete(path);
+         response = RequestStatus.Completed;
       }
       return response;
    }
@@ -143,7 +144,7 @@ public class CatalogFileSystemItemData: ICatalogItemData
    /// Create Data Leaf.
    /// </summary>
    /// <remarks>Item data is not created, call AddItem to do so</remarks>
-   /// <param name="item">parent item</param>
+   /// <param name="item">registered/cataloged parent item</param>
    /// <param name="name">data item name</param>
    /// <param name="dataId">(optional) data id</param>
    /// <param name="dataValue"(blob) data value</param>
@@ -162,7 +163,7 @@ public class CatalogFileSystemItemData: ICatalogItemData
    /// Create Data Leaf.
    /// </summary>
    /// <remarks>Item data is not created, call AddItem to do so</remarks>
-   /// <param name="item">parent item</param>
+   /// <param name="item">registered/cataloged parent item</param>
    /// <param name="name">data item name</param>
    /// <param name="dataId">(optional) data id</param>
    /// <param name="dataValue"(blob) data value</param>

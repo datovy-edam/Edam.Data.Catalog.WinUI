@@ -75,7 +75,7 @@ public class CatalogFileSystemClient :
       {
          // create a new container for given URI
          fcontainer = container.EnlistContainer(
-            Guid.NewGuid().ToString(), FILE_SYSTEM + " Container",
+            "root-folder", FILE_SYSTEM + " Container",
             _defaultRootFileFolder);
       }
       else

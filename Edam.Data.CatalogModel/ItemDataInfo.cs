@@ -77,7 +77,7 @@ public class ItemDataInfo
 
       data.Id = dataId ?? data.Id;
       data.ItemId = itemId;
-      data.Name = name;
+      data.Name = String.IsNullOrWhiteSpace(name) ? "default" : name;
 
       data.ContentType = contentType ?? null;
       data.ContentTypeId = contentType == null ? null : contentType.TypeId;
