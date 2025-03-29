@@ -12,6 +12,7 @@ namespace Edam.Data.CatalogModel;
 
 public interface ICatalogService
 {
+   CatalogInfo? Catalog { get; }
    Object Instance { get; }
 
    ContainerInfo DefaultContainer { get; set; }

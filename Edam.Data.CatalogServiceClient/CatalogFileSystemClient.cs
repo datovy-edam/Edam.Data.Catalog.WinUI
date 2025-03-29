@@ -1,20 +1,6 @@
 using Edam.Application;
 using Edam.Data.CatalogModel;
-using Edam.DataObjects.Objects;
-using Edam.DataObjects.Requests;
-using Edam.Diagnostics;
 using Edam.InOut;
-using Edam.Net;
-using Edam.Net.Web;
-using Edam.Text;
-using Microsoft.Extensions.Logging.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 // -----------------------------------------------------------------------------
 using Edam.Data.CatalogDb;
@@ -22,8 +8,7 @@ using Edam.Data.CatalogServiceClient;
 
 namespace Edam.Data.CatalogService;
 
-public class CatalogFileSystemClient :
-   CatalogBaseClient, ICatalogClient, ICatalogService
+public class CatalogFileSystemClient : CatalogBaseClient, ICatalogClient
 {
 
    #region -- 1.00 - Fields and Properties declration/definitions
@@ -34,6 +19,11 @@ public class CatalogFileSystemClient :
    protected string _defaultRootFileFolder;
    protected CatalogPathItem _rootItem;
    protected FolderFileItemInfo? _RootItem;
+
+   public CatalogInfo Catalog
+   {
+      get { return _catalog; }
+   }
 
    public object Instance
    {

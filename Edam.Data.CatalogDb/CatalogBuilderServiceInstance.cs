@@ -8,12 +8,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+// -----------------------------------------------------------------------------
+
 namespace Edam.Data.CatalogDb;
 
 
 /// <summary>
-/// Support for Catalog/File System repository inqueries and requests.  Any 
-/// request will be processed first by 
+/// Support for Catalog EF based repository inqueries and requests.
 /// </summary>
 public class CatalogBuilderServiceInstance : 
    CatalogServiceInstance, ICatalogService

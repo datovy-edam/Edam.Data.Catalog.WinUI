@@ -23,6 +23,12 @@ namespace Edam.Data.CatalogService;
 public partial class CatalogClient : CatalogBaseClient, ICatalogClient
 {
 
+   /// <summary>
+   /// This client don't support Catalog Info and if needed should be instanced
+   /// separately.
+   /// </summary>
+   public CatalogInfo? Catalog { get; } = null;
+
    #region -- 1.00 - Fields and Properties declration/definitions
 
    public object Instance

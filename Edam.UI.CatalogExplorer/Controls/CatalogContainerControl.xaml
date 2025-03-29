@@ -39,11 +39,11 @@
       </StackPanel>
     </StackPanel>
 
-    <ListView x:Name="ListViewer" Grid.Row="1" ItemsSource="{x:Bind ViewModel.DataSource}" MinHeight="40">
+    <ListView x:Name="ListViewer" Grid.Row="1" ItemsSource="{x:Bind ViewModel.DataSource}" MinHeight="40" SelectionChanged="ListViewer_SelectionChanged">
       <ListView.ItemTemplate>
         <DataTemplate x:DataType="local:ContainerItem">
           <ListViewItem>
-            <StackPanel Orientation="Horizontal" Margin="16,0,0,0">
+             <StackPanel x:Name="ContainerPanel" Orientation="Horizontal" Margin="16,0,0,0">
               <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEA3A;" FontSize="16" Margin="0" />
               <TextBlock Margin="14,0,0,0" Text="{Binding ContainerId, Mode=TwoWay}" FontSize="14" Padding="0,10,0,0"
                          Width="300" Height="35" />

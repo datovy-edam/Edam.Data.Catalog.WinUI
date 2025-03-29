@@ -9,6 +9,7 @@ using Edam.Data.CatalogModel;
 using Edam.Data.CatalogDb;
 using Edam.UI.Catalog.Models;
 using Edam.UI.CatalogExplorer;
+using Edam.Data.CatalogService;
 
 namespace Edam.UI.Catalog.Controls;
 
@@ -32,9 +33,7 @@ public class CatalogViewModel
    {
       string connectionUri = state.GetConnectionUri();
 
-      Catalog = await CatalogServiceHelper.GetCatalogAsync(
-          connectionUri);
-
+      Catalog = await CatalogServiceHelper.GetCatalogAsync(connectionUri);
    }
 
    /// <summary>
@@ -82,5 +81,45 @@ public class CatalogViewModel
          await Catalog.CatalogService.ItemData.GetItemDataAsync(pitem.Item.Id);
       return idata;
    }
+
+   #region -- 4.00 - Support to Setup Client based on Container type
+
+   /// <summary>
+   /// Create an instance of the Folder-File System provided.
+   /// </summary>
+   /// <param name="container">container</param>
+   /// <returns>instance (client) of ICatalogService is returned</returns>
+   public ICatalogService GetFileSystemProvider(ContainerInfo container)
+   {
+      return new CatalogFileSystemClient(
+         Guid.NewGuid().ToString(), container.ContainerURI,
+         Catalog.CatalogService.Container);
+   }
+
+   /// <summary>
+   /// Given a container return required Catalog Service provider to support
+   /// it based on the Container Type.
+   /// </summary>
+   /// <param name="container">container</param>
+   /// <returns>instance of client is returned</returns>
+   public ICatalogService GetClient(ContainerInfo container)
+   {
+      ICatalogService client = null;
+      switch (container.ContainerType)
+      {
+         case ContainerType.WebApi:
+            client = Catalog.DefaultCatalogService;
+            break;
+         case ContainerType.FileSystem:
+            client = GetFileSystemProvider(container);
+            break;
+         default:
+            client = Catalog.DefaultCatalogService;
+            break;
+      }
+      return client;
+   }
+
+   #endregion
 
 }

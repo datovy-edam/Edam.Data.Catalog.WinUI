@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using Edam.Data.CatalogModel;
 using Edam.UI.Catalog.Models;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -21,90 +22,108 @@ using Windows.Foundation.Collections;
 namespace Edam.UI.Catalog.Controls;
 public sealed partial class CatalogPanelControl : UserControl
 {
-    private CatalogViewModel _ViewModel = new CatalogViewModel();
+   private CatalogViewModel _ViewModel = new CatalogViewModel();
 
-    public CatalogPanelControl()
-    {
-        this.InitializeComponent();
-        CatalogExplorer.ViewModel.NotifyEventAsync = ManageNotification;
+   public CatalogPanelControl()
+   {
+      this.InitializeComponent();
+      CatalogExplorer.ViewModel.NotifyEventAsync = ManageNotificationAsync;
 
-        if (_ViewModel.State == null)
-        {
-            AppSession.ApplicationStateChangeNotify += 
-                ManageApplicationStateChange;
-        }
+      if (_ViewModel.State == null)
+      {
+         AppSession.ApplicationStateChangeNotify +=
+             ManageApplicationStateChange;
+      }
 
-    }
+      CatalogContainer.ViewModel.NotifyEvent += ManageContainerChange;
+   }
 
-    /// <summary>
-    /// Manage Item Content Notification events...
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="args"></param>
-    /// <returns></returns>
-    private async Task ManageNotification(
-        object sender, ItemContentNotificationArgs args)
-    {
-        switch(args.Type)
-        {
-            case ItemContentNotificationType.SetContent:
-                await EditorTabs.ManageNotificationAsync(sender, args);
-                break;
-            default:
-                break;
-        }
-    }
+   #region -- 4.00 - Manage Notifications
 
-    /// <summary>
-    /// Initialize Catalog.
-    /// </summary>
-    private async void InitializeCatalogAsync()
-    {
-        if (_ViewModel.State != null && !_ViewModel.HasCatalog)
-        {
-            _ViewModel.HasCatalog = true;
+   /// <summary>
+   /// Manage Item Content Notification events...
+   /// </summary>
+   /// <param name="sender"></param>
+   /// <param name="args"></param>
+   /// <returns></returns>
+   private async Task ManageNotificationAsync(
+       object sender, ItemContentNotificationArgs args)
+   {
+      switch (args.Type)
+      {
+         case ItemContentNotificationType.SetContent:
+            await EditorTabs.ManageNotificationAsync(sender, args);
+            break;
+         default:
+            break;
+      }
+   }
 
-            CatalogExplorer.ViewModel.CatalogBase = _ViewModel;
-            CatalogContainer.ViewModel.CatalogBase = _ViewModel;
+   /// <summary>
+   /// Manage Application State Change...
+   /// </summary>
+   /// <param name="sender"></param>
+   /// <param name="args"></param>
+   private void ManageApplicationStateChange(
+       object sender, ApplicationStateChangeArgs args)
+   {
+      InitializeCatalog(args.State);
+   }
 
-            await CatalogExplorer.ViewModel.
-                InitializeCatalogAsync(_ViewModel.State);
-            await CatalogContainer.ViewModel.InitializeContainersAsync();
-        }
-    }
+   /// <summary>
+   /// Manage Container Change Event notification.
+   /// </summary>
+   /// <param name="sender"></param>
+   /// <param name="args"></param>
+   private void ManageContainerChange(
+      object sender, NotificationEventArgs args)
+   {
+      CatalogExplorer.ViewModel.InitializeCatalogAsync(
+         args.Data as ICatalogService);
+   }
 
-    /// <summary>
-    /// Initialize Catalog with given state.
-    /// </summary>
-    /// <param name="state"></param>
-    public void InitializeCatalog(AppModelState state)
-    {
-        _ViewModel.State = state;
-        InitializeCatalogAsync();
-    }
+   #endregion
 
-    /// <summary>
-    /// After form is loaded try initializing the Catalog.
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    private void UserControl_Loaded(object sender, RoutedEventArgs e)
-    {
-        if (_ViewModel.State == null)
-        {
-            _ViewModel.State = AppSession.ApplicationState;
-        }
-        InitializeCatalogAsync();
-    }
+   /// <summary>
+   /// Initialize Catalog.
+   /// </summary>
+   private async void InitializeCatalogAsync()
+   {
+      if (_ViewModel.State != null && !_ViewModel.HasCatalog)
+      {
+         _ViewModel.HasCatalog = true;
 
-    /// <summary>
-    /// Manage Application State Change...
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="args"></param>
-    private void ManageApplicationStateChange(
-        object sender, ApplicationStateChangeArgs args)
-    {
-        InitializeCatalog(args.State);
-    }
+         CatalogExplorer.ViewModel.CatalogBase = _ViewModel;
+         CatalogContainer.ViewModel.CatalogBase = _ViewModel;
+
+         await CatalogExplorer.ViewModel.
+             InitializeCatalogAsync(_ViewModel.State);
+         await CatalogContainer.ViewModel.InitializeContainersAsync();
+      }
+   }
+
+   /// <summary>
+   /// Initialize Catalog with given state.
+   /// </summary>
+   /// <param name="state"></param>
+   public void InitializeCatalog(AppModelState state)
+   {
+      _ViewModel.State = state;
+      InitializeCatalogAsync();
+   }
+
+   /// <summary>
+   /// After form is loaded try initializing the Catalog.
+   /// </summary>
+   /// <param name="sender"></param>
+   /// <param name="e"></param>
+   private void UserControl_Loaded(object sender, RoutedEventArgs e)
+   {
+      if (_ViewModel.State == null)
+      {
+         _ViewModel.State = AppSession.ApplicationState;
+      }
+      InitializeCatalogAsync();
+   }
+
 }

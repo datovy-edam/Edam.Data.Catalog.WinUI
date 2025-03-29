@@ -1,11 +1,11 @@
-﻿using Edam.Data.CatalogService;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 // -----------------------------------------------------------------------------
+using Edam.Data.CatalogService;
 
 namespace Edam.Test.TestCatalogLibrary;
 

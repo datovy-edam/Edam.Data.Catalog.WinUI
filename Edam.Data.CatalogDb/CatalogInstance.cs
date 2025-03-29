@@ -11,11 +11,14 @@ using Edam.Diagnostics;
 
 namespace Edam.Data.CatalogDb;
 
+/// <summary>
+/// Provide support for base EF data Catalog.
+/// </summary>
 public class CatalogInstance : ICatalogs
 {
-   public const string EDAM_FILE_SYSTEM_DB = "edam.file.system.db";
+   public const string EDAM_CATALOG_DB = "edam.catalog.db";
 
-   private static string _CatalogName = EDAM_FILE_SYSTEM_DB;
+   private static string _CatalogName = EDAM_CATALOG_DB;
 
    public string GetCurrentCatalogName()
    {
@@ -24,7 +27,7 @@ public class CatalogInstance : ICatalogs
 
    public string GetDefaultCatalogName()
    {
-      return EDAM_FILE_SYSTEM_DB;
+      return EDAM_CATALOG_DB;
    }
 
    /// <summary>
@@ -42,8 +45,8 @@ public class CatalogInstance : ICatalogs
       {
          switch(invariantName)
          {
-            case EDAM_FILE_SYSTEM_DB:
-               _CatalogName = EDAM_FILE_SYSTEM_DB;
+            case EDAM_CATALOG_DB:
+               _CatalogName = EDAM_CATALOG_DB;
                results.Instance = new CatalogBuilderServiceInstance(
                   connectionString);
                results.Succeeded();

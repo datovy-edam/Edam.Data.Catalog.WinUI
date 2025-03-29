@@ -17,7 +17,7 @@ public class CatalogServiceHelper
    public static string _SessionId = Guid.NewGuid().ToString();
 
    /// <summary>
-   /// Get Catalog Service instance...
+   /// Get HTTP based Catalog API Service instance...
    /// </summary>
    /// <returns>Catalog Service instance is returned</returns>
    public static async Task<ICatalogService> GetClientInstanceAsync(
@@ -43,9 +43,13 @@ public class CatalogServiceHelper
    /// <summary>
    /// Get Catalog Service instance...
    /// </summary>
+   /// <param name="connectionUri">connection string (default: null </param>
+   /// <param name="invariantName">resource invariant name (default:
+   /// EDAM_CATALOG_DB)</param>
    /// <returns>Catalog Service instance is returned</returns>
    public static ICatalogService GetLocalInstance(
-       string? connectionString = null)
+       string? connectionString = null,
+       string invariantName = catDb.CatalogInstance.EDAM_CATALOG_DB)
    {
       ResultsLog<ICatalogService?> results = null;
       var _conString = String.IsNullOrWhiteSpace(connectionString) ?
@@ -55,7 +59,7 @@ public class CatalogServiceHelper
       // initialize repository
       catDb.CatalogInstance instance = new catDb.CatalogInstance();
       results = instance.GetCatalog(_SessionId,
-         catDb.CatalogInstance.EDAM_FILE_SYSTEM_DB, connectionString);
+         invariantName, connectionString);
 
       if (results.Success)
       {
@@ -70,21 +74,24 @@ public class CatalogServiceHelper
    /// </summary>
    /// <param name="connectionUri">connection URI 
    /// (Connection String or Base URI)</param>
+   /// <param name="invariantName">resource invariant name (default:
+   /// EDAM_CATALOG_DB)</param>
    /// <returns>Catalog Service instance is returned</returns>
    public static async Task<ICatalogService> GetInstanceAsync(
-       string? connectionUri = null)
+       string? connectionUri = null,
+       string invariantName = catDb.CatalogInstance.EDAM_CATALOG_DB)
    {
       ICatalogService result = null;
 
       if (Environment.OSVersion.Platform == PlatformID.Other)
       {
          // initialize repository
-         result = await
-             CatalogServiceHelper.GetClientInstanceAsync(connectionUri);
+         result = await CatalogServiceHelper.GetClientInstanceAsync(
+            connectionUri);
       }
       else
       {
-         result = GetLocalInstance(connectionUri);
+         result = GetLocalInstance(connectionUri, invariantName);
       }
 
       return result;
@@ -108,17 +115,21 @@ public class CatalogServiceHelper
    /// <summary>
    /// Get Catalog to build its tree and access data.
    /// </summary>
-   /// <param name="connectionUri">connection string</param>
+   /// <param name="connectionUri">connection string (default: null </param>
+   /// <param name="invariantName">resource invariant name (default:
+   /// EDAM_CATALOG_DB)</param>
    /// <returns>instance of catalog is returned</returns>
    public static async Task<CatalogInfo?> GetCatalogAsync(
-       string? connectionUri = null)
+       string? connectionUri = null, 
+       string invariantName = catDb.CatalogInstance.EDAM_CATALOG_DB)
    {
       CatalogInfo catalog = null;
       try
       {
          ICatalogService instance = await GetInstanceAsync(connectionUri);
-         catalog = new CatalogInfo(instance, _SessionId);
-         await catalog.InitializeCatalogAsync("", buildTree: true);
+         catalog = instance.Catalog ?? new CatalogInfo(instance, _SessionId);
+         await catalog.InitializeCatalogAsync(
+            "", buildTree: instance.Catalog == null);
       }
       catch (Exception ex)
       {

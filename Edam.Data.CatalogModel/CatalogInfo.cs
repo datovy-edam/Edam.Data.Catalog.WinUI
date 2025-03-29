@@ -15,6 +15,7 @@ public class CatalogInfo
 
    #region -- 1.00 - Fields and Properties...
 
+   public const string DEFAULT_CONTAINER_NAME = "default";
    public const string CATALOG_FILE_NAME = "catalog.json";
 
    /// <summary>
@@ -23,11 +24,13 @@ public class CatalogInfo
    public static string IconBranch { get; set; }
    public static string IconLeaf { get; set; }
 
-   private ICatalogService? _CatalogService { get; set; }
-   public ICatalogService? CatalogService
+   private ICatalogService? _DefaultCatalogService { get; set; }
+   public ICatalogService? DefaultCatalogService
    {
-      get { return _CatalogService; }
+      get { return _DefaultCatalogService; }
    }
+
+   public ICatalogService CatalogService { get; set; }
 
    //private HashSet<CatalogItemInfo?>? _Catalog;
 
@@ -61,7 +64,7 @@ public class CatalogInfo
 
    public CatalogInfo(ICatalogService service, string sessionId)
    {
-      _CatalogService = service;
+      CatalogService = _DefaultCatalogService = service;
       //var container = service.SetContainer(sessionId, String.Empty);
    }
 
@@ -75,17 +78,19 @@ public class CatalogInfo
    public async Task<CatalogInfo> InitializeCatalogAsync(
       string containerId, bool buildTree = false)
    {
-      var container = await _CatalogService.Container.GetContainerAsync(containerId);
+      var container = await _DefaultCatalogService.Container.
+         GetContainerAsync(containerId);
 
       // create root item...
-      var rootItem = await _CatalogService.Item.GetContainerRootItemAsync(
-         _CatalogService.DefaultContainer.Id);
+      var rootItem = await _DefaultCatalogService.Item.
+         GetContainerRootItemAsync(
+            _DefaultCatalogService.DefaultContainer.Id);
       RootPathItem = CatalogTreeBuilder.ToPathItem(rootItem);
 
       // build catalog tree
       if (buildTree)
       {
-         var builder = new CatalogTreeBuilder(_CatalogService, this);
+         var builder = new CatalogTreeBuilder(_DefaultCatalogService, this);
          await builder.BuildTreeAsync();
       }
 
