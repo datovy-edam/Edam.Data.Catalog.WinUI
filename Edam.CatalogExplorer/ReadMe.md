@@ -114,5 +114,6 @@ the `CatalogServiceBaseUri`.
 
 ## What is next?
 
-- Support local file system as a container
+- Add hooks to allow functionality through external Components that implements
+viewing, operations, and support for connectivity to other functionality.
 
