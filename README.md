@@ -6,13 +6,23 @@ The Library contains:
 
 - Catalog Db (the Repository)
 - Catalog Model (C# classes and resources)
-- Catalog Service Client (implements a client for catalog web API)
+- Catalog Service Client (implements a client for catalog REST API)
 - Catalog Explorer (WinUI 3 App for testing or adding data)
 
 Details of each follow.
 
-## Catalog Repository
-This first implementation uses an EF based repository to manage Containers,
+## Catalog Repositories
+
+The library supports three (3) Clients:
+
+1. Context DB Client (default)
+2. REST API Client
+3. File System Client
+
+Details about each follow.
+
+### Context DB Client
+This default implementation uses an EF based repository to manage Containers,
 (File) Items, and Item Data (Files), details follow:
 
 - Containers are similar to a file-system drive.  They have a "root" item that
@@ -24,6 +34,20 @@ one, or more data (Files) that are defined independently and stored in the
 Data Store as binary (blob) files.
 
 - A Data (File) is a child of an Item and will hold the binary blob.
+
+This Client requires a Database (MSSQL for now) to provide the repository
+physical storage.  Containers in this default implementation can be of 2 kind:
+
+1. Context DB (the default) repo.
+2. File System (optional) as implied, supporting a physical folder - file
+hierarchy (see details in the "File System Client" section ahead).
+
+### REST API Client
+An instance of the Context DB can be accessed through the REST API client.
+ 
+### File System Client
+Desktop (or Laptop) File System client allows the access of local folder by
+specifying a root path.
 
 ## Catalog Model
 The Catalog Model define the C# classes used in the related Catalog Repository
@@ -90,5 +114,6 @@ the `CatalogServiceBaseUri`.
 
 ## What is next?
 
-- Support local file system as a container
+- Add hooks to allow functionality through external Components that implements
+viewing, operations, and support for connectivity to other functionality.
 
