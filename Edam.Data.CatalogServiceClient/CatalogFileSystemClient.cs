@@ -8,7 +8,8 @@ using Edam.Data.CatalogServiceClient;
 
 namespace Edam.Data.CatalogService;
 
-public class CatalogFileSystemClient : CatalogBaseClient, ICatalogClient
+public class CatalogFileSystemClient : CatalogBaseClient, ICatalogClient, 
+   ICatalogService
 {
 
    #region -- 1.00 - Fields and Properties declration/definitions
@@ -38,12 +39,20 @@ public class CatalogFileSystemClient : CatalogBaseClient, ICatalogClient
    #endregion
    #region -- 1.50 - Constructure and Initialization
 
-   public CatalogFileSystemClient(
-      string sessionId, string baseUri, ICatalogContainer container) : 
+   public CatalogFileSystemClient(string sessionId, string baseUri) :
       base(sessionId, baseUri)
    {
+      _lastSessionId = sessionId;
       _BaseURI = baseUri;
-      if (String.IsNullOrWhiteSpace(baseUri))
+   }
+
+   /// <summary>
+   /// Initialize Client.
+   /// </summary>
+   /// <param name="container"></param>
+   public async Task InitializeClientAsync(ICatalogContainer container)
+   { 
+      if (String.IsNullOrWhiteSpace(_BaseURI))
       {
          _defaultRootFileFolder = AppSettings.GetSectionString(
             "DefaultRootFileFolder", AppSettings.APP_SETTINGS_SECTION_KEY);
@@ -54,7 +63,7 @@ public class CatalogFileSystemClient : CatalogBaseClient, ICatalogClient
       }
       else
       {
-         _defaultRootFileFolder = baseUri;
+         _defaultRootFileFolder = _BaseURI;
       }
 
       // try to find a container based on this base URI...
@@ -70,7 +79,7 @@ public class CatalogFileSystemClient : CatalogBaseClient, ICatalogClient
       }
       else
       {
-         container.SetContainer(sessionId, fcontainer.ContainerId);
+         container.SetContainer(_lastSessionId, fcontainer.ContainerId);
       }
 
       CurrentContainer = fcontainer;
@@ -101,7 +110,7 @@ public class CatalogFileSystemClient : CatalogBaseClient, ICatalogClient
       // finally, setup Item Data
       ItemData = new CatalogFileSystemItemData(this);
 
-      InitializeFileItems(_defaultRootFileFolder);
+      await InitializeFileItems(_defaultRootFileFolder);
    }
 
    /// <summary>
@@ -109,7 +118,7 @@ public class CatalogFileSystemClient : CatalogBaseClient, ICatalogClient
    /// by going through all folder - files and child folders children.
    /// </summary>
    /// <param name="baseUri">that should be a folder full path name</param>
-   public async void InitializeFileItems(string baseUri)
+   public async Task InitializeFileItems(string baseUri)
    {
       _catalog = new CatalogInfo(this, String.Empty);
       _catalog.RootPathItem = _rootItem;

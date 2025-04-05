@@ -1,26 +1,20 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Options;
 
 using Edam.Data.CatalogModel;
-using Edam.Data.CatalogDb;
 using System.Collections.ObjectModel;
 using Edam.UI.Catalog.Models;
 using Edam.Diagnostics;
-using Edam.Application;
-using Edam.DataObjects.Trees;
-using Microsoft.UI.Xaml.Input;
 
 // -----------------------------------------------------------------------------
 
 namespace Edam.UI.Catalog.Controls;
 
+/// <summary>
+/// Catalog Explorer pannel view-model support...
+/// </summary>
 public class CatalogExplorerViewModel : ObservableObject
 {
 
@@ -29,17 +23,26 @@ public class CatalogExplorerViewModel : ObservableObject
 
    public CatalogViewModel CatalogBase { get; set; }
 
-   public ObservableCollection<CatalogItem> DataSource { get; set; } =
-       new ObservableCollection<CatalogItem>();
+   public ObservableCollection<CatalogItemModel> DataSource { get; set; } =
+       new ObservableCollection<CatalogItemModel>();
 
    public ItemContentNotificationAsync NotifyEventAsync = null;
 
    /// <summary>
-   /// Initialize Catalog
+   /// Setup Catalog... that will create a tree structured using an
+   /// observable collection that is passed to a Tree-Viewer.  While 
+   /// switching from container to container the root element of the
+   /// container and related tree - items / children are used.
    /// </summary>
-   public async Task InitializeCatalogAsync(AppModelState state)
+   public void SetupCatalogAsync(CatalogInfo? catalog)
    {
-      await CatalogBase.GetCatalogAsync(state);
+      // check that we have a valid catalog...
+      if (catalog == null)
+      {
+         var ex = new ArgumentNullException(nameof(catalog));
+         ResultLog.Trace(ex, "CatalogExplorerViewModel::SetupCatalogAsync");
+         return;
+      }
 
       // for some reason if you Clear the collection it throw an exception
       if (DataSource.Count > 0)
@@ -48,7 +51,7 @@ public class CatalogExplorerViewModel : ObservableObject
       }
 
       // get root element observable item
-      CatalogBase.RootItem = GetData(CatalogBase.Catalog.RootTreeItem);
+      CatalogBase.RootItem = ToCatalogItem(catalog.RootTreeItem);
 
       // don't show root item so add first level items (the children)
       foreach (var itm in CatalogBase.RootItem.Children)
@@ -56,13 +59,14 @@ public class CatalogExplorerViewModel : ObservableObject
          DataSource.Add(itm);
       }
 
+      // notify that a new Catalog - tree has been initialized...
       if (CatalogBase.NotifyEvent != null)
       {
          var args = new NotificationEventArgs
          {
             Results = new ResultLog(),
             EventID = CatalogViewModel.CATALOG_INITIALIZED,
-            Data = CatalogBase.Catalog
+            Data = catalog
          };
          args.Results.Succeeded();
          CatalogBase.NotifyEvent(this, args);
@@ -70,13 +74,22 @@ public class CatalogExplorerViewModel : ObservableObject
    }
 
    /// <summary>
-   /// Client Change is reported... update explorer accordingly.
+   /// Initialize Catalog Async...
    /// </summary>
-   /// <param name="client">catalog service client instance</param>
-   /// <returns>Task is returned</returns>
-   public async Task InitializeCatalogAsync(ICatalogService client)
+   public async Task InitializeCatalogAsync(AppModelState state)
    {
-      // TODO: 
+      await CatalogBase.GetCatalogAsync(state);
+      SetupCatalogAsync(CatalogBase.Catalog);
+   }
+
+   /// <summary>
+   /// Container Change is reported... update explorer accordingly.
+   /// </summary>
+   /// <param name="item">container instance</param>
+   /// <returns>Task is returned</returns>
+   public void InitializeCatalogAsync(ContainerItem item)
+   {
+      SetupCatalogAsync(item.Catalog);
    }
 
    /// <summary>
@@ -84,9 +97,9 @@ public class CatalogExplorerViewModel : ObservableObject
    /// </summary>
    /// <param name="item">item to go through children and build tree</param>
    /// <returns>observable item</returns>
-   public CatalogItem GetData(CatalogItemInfo item)
+   public CatalogItemModel ToCatalogItem(CatalogItemInfo item)
    {
-      CatalogItem itm = new CatalogItem()
+      CatalogItemModel itm = new CatalogItemModel()
       {
          Name = item.Name,
          Item = item,
@@ -95,11 +108,16 @@ public class CatalogExplorerViewModel : ObservableObject
 
       foreach (var node in item.Children)
       {
-         itm.Children.Add(GetData(node));
+         itm.Children.Add(ToCatalogItem(node));
       }
       return itm;
    }
 
+   /// <summary>
+   /// Notify Event.
+   /// </summary>
+   /// <param name="item"></param>
+   /// <returns></returns>
    private async Task NotifyEvent(IItemContent item)
    {
       if (NotifyEventAsync != null)
@@ -112,11 +130,16 @@ public class CatalogExplorerViewModel : ObservableObject
       }
    }
 
-   public async Task SetEditorTextContent(CatalogItem item)
+   /// <summary>
+   /// Set Editor Text Content...
+   /// </summary>
+   /// <param name="item"></param>
+   /// <returns></returns>
+   public async Task SetEditorTextContent(CatalogItemModel? item)
    {
       if (item != null)
       {
-         var citem = item as CatalogItem;
+         var citem = item as CatalogItemModel;
          var items = await CatalogBase.GetItemDataAsync(citem);
          var data = items != null && items.Count > 0 ? items[0] : null;
          if (data != null)
@@ -130,21 +153,5 @@ public class CatalogExplorerViewModel : ObservableObject
          }
       }
    }
-}
 
-/// <summary>
-/// Observable Item
-/// </summary>
-public class CatalogItem
-{
-   public string Name { get; set; }
-   public TreeItemType ItemType { get; set; }
-   public ObservableCollection<CatalogItem> Children { get; set; } =
-       new ObservableCollection<CatalogItem>();
-   public CatalogItemInfo Item { get; set; }
-
-   public override string ToString()
-   {
-      return Name;
-   }
 }

@@ -9,12 +9,21 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json.Serialization;
 
+// -----------------------------------------------------------------------------
+
 namespace Edam.Data.CatalogModel;
 
+
+/// <summary>
+/// Container Type.
+/// </summary>
+/// <remarks>
+/// Data Context client 
+/// </remarks>
 public enum ContainerType
 {
    Unknown = 0,
-   WebApi = 1,
+   DataContext = 1,
    FileSystem = 2
 }
 

@@ -17,11 +17,12 @@ public class CatalogFileFolderClient
    /// </summary>
    /// <param name="path"></param>
    /// <returns></returns>
-   public static CatalogFileSystemClient GetClient(string path)
+   public static async Task<CatalogFileSystemClient> GetClientAsync(string path)
    {
       var container = AppHelper.CatalogInstance.Container;
-      return new CatalogFileSystemClient(
-         Guid.NewGuid().ToString(), path, container);
+      var client = new CatalogFileSystemClient(Guid.NewGuid().ToString(), path);
+      await client.InitializeClientAsync(container);
+      return client;
    }
 
 }

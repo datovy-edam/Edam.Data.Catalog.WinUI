@@ -47,25 +47,6 @@ public class CatalogContainerViewModel : ObservableObject
    }
 
    /// <summary>
-   /// Notify Client Change Event.
-   /// </summary>
-   /// <param name="message">message with details about the client</param>
-   public void NotifyClientChangedEvent(string message = null)
-   {
-      if (NotifyEvent != null)
-      {
-         var args = new NotificationEventArgs
-         {
-            EventID = Guid.NewGuid().ToString(),
-            Message = message ?? "Change Container Event",
-            Data = CatalogBase.Catalog.CatalogService
-         };
-
-         NotifyEvent(this, args);
-      }
-   }
-
-   /// <summary>
    /// Add Container using submitted name.
    /// </summary>
    /// <param name="name">container name</param>
@@ -89,7 +70,7 @@ public class CatalogContainerViewModel : ObservableObject
       }
       else
       {
-         var client = container.ContainerType == ContainerType.WebApi ?
+         var client = container.ContainerType == ContainerType.DataContext ?
             CatalogBase.Catalog.CatalogService : null;
 
          var item = new ContainerItem(client);
@@ -100,7 +81,30 @@ public class CatalogContainerViewModel : ObservableObject
    }
 
    /// <summary>
-   /// Initialize Catalog
+   /// Notify Client Change Event.
+   /// </summary>
+   /// <param name="message">message with details about the client</param>
+   /// <param name="container">container</param>
+   public void NotifyContainerChangedEvent(
+      string message = null, ContainerItem container = null)
+   {
+      if (NotifyEvent != null)
+      {
+         var args = new NotificationEventArgs
+         {
+            EventID = Guid.NewGuid().ToString(),
+            Message = message ?? "Change Container Event",
+            Data = container
+         };
+
+         NotifyEvent(this, args);
+      }
+   }
+
+   /// <summary>
+   /// Initialize Catalog Containers Async... this should be called only
+   /// once, if not always setup the current client to the default that is
+   /// Context-DB client...
    /// </summary>
    public async Task InitializeContainersAsync()
    {
@@ -109,23 +113,28 @@ public class CatalogContainerViewModel : ObservableObject
          CatalogService.Container.GetContainersAsync();
       ICatalogService client = null;
 
+      // remember first container...
+      var defaultClient = CatalogBase.Catalog.CatalogService;
+
+      // prepare container list...
       foreach (var item in lst)
       {
          // setup only the (default) container client, supporting client
          // should be set only when the container is selected the first time
-         client = item.ContainerId == CatalogInfo.DEFAULT_CONTAINER_NAME ? 
-            CatalogBase.Catalog.CatalogService : null;
+         client = item.ContainerId == CatalogInfo.DEFAULT_CONTAINER_NAME ?
+            defaultClient : null;
 
          // add container
          var container = new ContainerItem(client);
          container.Container = item;
+         container.Catalog = container.Catalog ?? CatalogBase.Catalog;
          DataSource.Add(container);
       }
 
-      if (CatalogBase.Catalog.CatalogService != client)
+      if (CatalogBase.Catalog.CatalogService != defaultClient)
       {
-         CatalogBase.Catalog.CatalogService = client;
-         NotifyClientChangedEvent();
+         CatalogBase.Catalog.CatalogService = defaultClient;
+         NotifyContainerChangedEvent();
       }
    }
 
@@ -133,11 +142,15 @@ public class CatalogContainerViewModel : ObservableObject
    /// A container has been selected select it as needed...
    /// </summary>
    /// <param name="item">selected container-item</param>
-   public void SelectedContainer(ContainerItem item)
+   public async void SelectedContainer(ContainerItem item)
    {
       if (item.Client == null)
       {
-         item.Client = CatalogBase.GetClient(item.Container);
+         item.Client = await CatalogBase.GetClientAsync(item.Container);
+         if (item.Client.Catalog != null)
+         {
+            item.Catalog = item.Client.Catalog;
+         }
       }
 
       // this should never happend!
@@ -149,14 +162,14 @@ public class CatalogContainerViewModel : ObservableObject
          item.Client = CatalogBase.Catalog.DefaultCatalogService;
          CatalogBase.Catalog.CatalogService = item.Client;
 
-         NotifyClientChangedEvent();
+         NotifyContainerChangedEvent(container: item);
          return;
       }
 
-      if (CatalogBase.Catalog.CatalogService != item.Client)
-      {
-         NotifyClientChangedEvent();
-      }
+      //if (CatalogBase.Catalog.CatalogService != item.Client)
+      //{
+         NotifyContainerChangedEvent(container: item);
+      //}
    }
 
 }

@@ -79,7 +79,7 @@ public sealed partial class CatalogPanelControl : UserControl
       object sender, NotificationEventArgs args)
    {
       CatalogExplorer.ViewModel.InitializeCatalogAsync(
-         args.Data as ICatalogService);
+         args.Data as ContainerItem);
    }
 
    #endregion

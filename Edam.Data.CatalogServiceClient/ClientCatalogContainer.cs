@@ -114,9 +114,11 @@ public class ClientCatalogContainer : ICatalogContainer
    /// <param name="containerId">container Id</param>
    /// <param name="description">container description</param>
    /// <param name="baseUri">base URI</param>
+   /// <param name="type">container type</param>
    /// <returns>enlisted container info is returned else null</returns>
    public async Task<ContainerInfo> EnlistContainerAsync(
-      string containerId, string description, string baseUri = null)
+      string containerId, string description, string? baseUri = null,
+      ContainerType type = ContainerType.DataContext)
    {
       _Client.ResultsLog.Clear();
 
@@ -125,6 +127,7 @@ public class ClientCatalogContainer : ICatalogContainer
       pars.Add(CatalogBaseClient.TAG_CONTAINER_ID, containerId);
       pars.Add(QueryStringTag.Description, description);
       pars.Add("baseUri", baseUri);
+      pars.Add("type", (int)type);
       ContainerInfo container = null;
 
       var req = CatalogBaseClient.URI_CONTAINER_ENLIST + pars.ToString();
@@ -148,13 +151,15 @@ public class ClientCatalogContainer : ICatalogContainer
    /// <param name="containerId">container Id</param>
    /// <param name="description">container description</param>
    /// <param name="baseUri">base URI</param>
+   /// <param name="type">container type</param>
    /// <returns>enlisted container info is returned else null</returns>
    public ContainerInfo EnlistContainer(
-      string containerId, string description, string baseUri = null)
+      string containerId, string description, string baseUri = null,
+      ContainerType type = ContainerType.DataContext)
    {
       ContainerInfo? container = null;
       Task<ContainerInfo> result = EnlistContainerAsync(
-         containerId, description, baseUri);
+         containerId, description, baseUri, type);
       result.Wait();
       if (result.Status == TaskStatus.RanToCompletion)
       {

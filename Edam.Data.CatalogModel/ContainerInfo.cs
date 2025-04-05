@@ -32,7 +32,7 @@ public class ContainerInfo: ITreeContainer
    [MaxLength(1024)]
    public string Description { get; set; } = "Default";
 
-   public ContainerType ContainerType { get; set; } = ContainerType.WebApi;
+   public ContainerType ContainerType { get; set; } = ContainerType.DataContext;
 
    [MaxLength(1024)]
    public string ContainerURI { get; set; } = "";

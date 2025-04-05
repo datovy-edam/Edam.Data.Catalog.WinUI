@@ -220,9 +220,11 @@ public class CatalogContainer : ICatalogContainer
    /// <param name="containerId">container id</param>
    /// <param name="description">description</param>
    /// <param name="baseUri">base URI</param>
+   /// <param name="type">container type</param>
    /// <returns>container info is returned</returns>
    public ContainerInfo EnlistContainer(
-      string containerId, string description, string baseUri = null)
+      string containerId, string description, string baseUri = null,
+      ContainerType type = ContainerType.DataContext)
    {
       ContainerInfo container = null;
       ResultLog results = new ResultLog();
@@ -245,6 +247,7 @@ public class CatalogContainer : ICatalogContainer
             container.ContainerId = containerId;
             container.Description = description;
             container.ContainerURI = baseUri;
+            container.ContainerType = type;
             DbContext.Containers.Add(container);
 
             // add root item
@@ -264,6 +267,7 @@ public class CatalogContainer : ICatalogContainer
       {
          container = new ContainerInfo();
          container.ContainerId = string.Empty;
+         container.ContainerType = type;
          results.Failed(ex);
       }
 

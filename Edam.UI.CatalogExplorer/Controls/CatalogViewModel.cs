@@ -22,7 +22,7 @@ public class CatalogViewModel
    public bool HasCatalog = false;
 
    public CatalogInfo? Catalog = null;
-   public CatalogItem RootItem = null;
+   public CatalogItemModel RootItem = null;
 
    public NotificationEventHandler NotifyEvent { get; set; }
 
@@ -74,7 +74,7 @@ public class CatalogViewModel
    /// </summary>
    /// <param name="item">item instance of CatalogItem</param>
    /// <returns>ItemDataInfo instance is returned</returns>
-   public async Task<List<ItemDataInfo>> GetItemDataAsync(CatalogItem item)
+   public async Task<List<ItemDataInfo>> GetItemDataAsync(CatalogItemModel item)
    {
       CatalogPathItem pitem = item.Item.Tag as CatalogPathItem;
       var idata =
@@ -89,11 +89,14 @@ public class CatalogViewModel
    /// </summary>
    /// <param name="container">container</param>
    /// <returns>instance (client) of ICatalogService is returned</returns>
-   public ICatalogService GetFileSystemProvider(ContainerInfo container)
+   public async Task<ICatalogService> GetFileSystemProviderAsync(
+      ContainerInfo container)
    {
-      return new CatalogFileSystemClient(
-         Guid.NewGuid().ToString(), container.ContainerURI,
+      var client = new CatalogFileSystemClient(
+         Guid.NewGuid().ToString(), container.ContainerURI);
+      await client.InitializeClientAsync(
          Catalog.CatalogService.Container);
+      return client;
    }
 
    /// <summary>
@@ -102,16 +105,16 @@ public class CatalogViewModel
    /// </summary>
    /// <param name="container">container</param>
    /// <returns>instance of client is returned</returns>
-   public ICatalogService GetClient(ContainerInfo container)
+   public async Task<ICatalogService> GetClientAsync(ContainerInfo container)
    {
       ICatalogService client = null;
       switch (container.ContainerType)
       {
-         case ContainerType.WebApi:
+         case ContainerType.DataContext:
             client = Catalog.DefaultCatalogService;
             break;
          case ContainerType.FileSystem:
-            client = GetFileSystemProvider(container);
+            client = await GetFileSystemProviderAsync(container);
             break;
          default:
             client = Catalog.DefaultCatalogService;

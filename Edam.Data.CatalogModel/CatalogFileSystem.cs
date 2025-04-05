@@ -56,12 +56,13 @@ public class CatalogFileSystem
    /// <param name="builder">builder instance</param>
    /// <returns>preapred builder instance is returned</returns>
    public static async Task<CatalogTreeBuilder> PrepareBuilderAsync(
-      FolderFileItemInfo item, CatalogTreeBuilder? builder)
+      FolderFileItemInfo item, CatalogTreeBuilder? builder,
+      CatalogPathItem? parent)
    {
-      var citem = await builder.GetItemAsync(item);
+      var citem = await builder.GetItemAsync(item, parent);
       foreach(var child in item.Children)
       {
-          await PrepareBuilderAsync(child, builder);
+         await PrepareBuilderAsync(child, builder, citem);
       }
       return builder;
    }
@@ -83,7 +84,7 @@ public class CatalogFileSystem
          var results = GetFileSystemItems(folderPath);
          if (results.Success)
          {
-            await PrepareBuilderAsync(results.Instance, tbuilder);
+            await PrepareBuilderAsync(results.Instance, tbuilder, null);
          }
       }
       return tbuilder;

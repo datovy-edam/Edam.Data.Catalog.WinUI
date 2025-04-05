@@ -520,8 +520,10 @@ public class CatalogTreeBuilder
    /// Get Catalog Item information based on given folder-file instance.
    /// </summary>
    /// <param name="item">folder-file instance</param>
+   /// <param name="parent">parent item</param>
    /// <returns>instance of catalog item is returned</returns>
-   public async Task<CatalogPathItem> GetItemAsync(FolderFileItemInfo item)
+   public async Task<CatalogPathItem> GetItemAsync(
+      FolderFileItemInfo item, CatalogPathItem? parent = null)
    {
       // if this is the root item just return
       if (item.Full == _CatalogInfo.RootPathItem.RootFullPath)
@@ -549,7 +551,7 @@ public class CatalogTreeBuilder
       }
 
       pitem = new CatalogPathItem(fitem);
-      pitem.Parent = _CatalogInfo.RootPathItem;
+      pitem.Parent = parent ?? _CatalogInfo.RootPathItem;
       if (foundItem == null)
       {
          var citem = await GetItemAsync(pitem);

@@ -19,59 +19,61 @@ using Windows.Storage.Pickers;
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Edam.UI.Catalog.Controls;
+
+
 public sealed partial class CatalogExplorerControl : UserControl
 {
-    private object _lastSelected = null;
-    private CatalogExplorerViewModel _ViewModel =
-        new CatalogExplorerViewModel();
-    public CatalogExplorerViewModel ViewModel
-    {
-        get { return _ViewModel; }
-    }
-    public CatalogExplorerControl()
-    {
-        this.InitializeComponent();
-        DataContext = _ViewModel;
+   private object _lastSelected = null;
+   private CatalogExplorerViewModel _ViewModel =
+       new CatalogExplorerViewModel();
+   public CatalogExplorerViewModel ViewModel
+   {
+      get { return _ViewModel; }
+   }
+   public CatalogExplorerControl()
+   {
+      this.InitializeComponent();
+      DataContext = _ViewModel;
 
-    }
+   }
 
-    private void TreeView_SelectionChanged(
-        TreeView sender, TreeViewSelectionChangedEventArgs args)
-    {
-        _lastSelected = args.AddedItems.Count > 0 ?
-            args.AddedItems.First() : null;
-    }
+   private void TreeView_SelectionChanged(
+       TreeView sender, TreeViewSelectionChangedEventArgs args)
+   {
+      _lastSelected = args.AddedItems.Count > 0 ?
+          args.AddedItems.First() : null;
+   }
 
-    private void TreeView_DoubleTapped(
-        object sender, DoubleTappedRoutedEventArgs e)
-    {
-        ViewModel.SetEditorTextContent(_lastSelected as CatalogItem);
-    }
+   private void TreeView_DoubleTapped(
+       object sender, DoubleTappedRoutedEventArgs e)
+   {
+      ViewModel.SetEditorTextContent(_lastSelected as CatalogItemModel);
+   }
 
-    private async void UploadFile_Click(object sender, PointerRoutedEventArgs e)
-    {
-        var file = await AppSession.GetFileAsync();
-    }
+   private async void UploadFile_Click(object sender, PointerRoutedEventArgs e)
+   {
+      var file = await AppSession.GetFileAsync();
+   }
 
-    private async void UploadFolder_Click(object sender, PointerRoutedEventArgs e)
-    {
-        //var folder = await AppSession.GetFolderAsync();
-        var catFolder = new CatalogFolder(_ViewModel.CatalogBase);
-        await catFolder.FolderToCatalogAsync();
-    }
+   private async void UploadFolder_Click(object sender, PointerRoutedEventArgs e)
+   {
+      //var folder = await AppSession.GetFolderAsync();
+      var catFolder = new CatalogFolder(_ViewModel.CatalogBase);
+      await catFolder.FolderToCatalogAsync();
+   }
 }
 
 public class ExplorerItemTemplateSelector : DataTemplateSelector
 {
-    public DataTemplate FolderTemplate { get; set; }
-    public DataTemplate FileTemplate { get; set; }
+   public DataTemplate FolderTemplate { get; set; }
+   public DataTemplate FileTemplate { get; set; }
 
-    protected override DataTemplate SelectTemplateCore(object item)
-    {
-        var explorerItem = (CatalogItem)item;
-        if (explorerItem.ItemType == DataObjects.Trees.TreeItemType.Branch)
-            return FolderTemplate;
+   protected override DataTemplate SelectTemplateCore(object item)
+   {
+      var explorerItem = (CatalogItemModel)item;
+      if (explorerItem.ItemType == DataObjects.Trees.TreeItemType.Branch)
+         return FolderTemplate;
 
-        return FileTemplate;
-    }
+      return FileTemplate;
+   }
 }

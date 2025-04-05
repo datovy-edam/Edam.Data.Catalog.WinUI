@@ -26,6 +26,8 @@ public class CatalogServiceInstance :
 
    protected CatalogContext? DbContext { get; set; } = null;
 
+   public CatalogInfo Catalog { get; set; }
+
    public object Instance
    {
       get { return this; }

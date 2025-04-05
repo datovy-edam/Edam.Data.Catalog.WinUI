@@ -18,7 +18,8 @@ public interface ICatalogContainer
 
    ContainerInfo SetContainer(string sessionId, string containerId);
    ContainerInfo EnlistContainer(
-      string containerId, string description, string baseURI = null);
+      string containerId, string description, string? baseURI = null,
+      ContainerType type = ContainerType.DataContext);
    ContainerInfo DelistContainer(string containerId);
 
    Task<List<ContainerInfo>> GetContainersAsync();
