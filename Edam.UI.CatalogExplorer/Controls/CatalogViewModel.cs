@@ -21,9 +21,24 @@ public class CatalogViewModel
    public AppModelState State = null;
    public bool HasCatalog = false;
 
+   /// <summary>
+   /// Base Catalog...
+   /// </summary>
    public CatalogInfo? Catalog = null;
+
+   /// <summary>
+   /// Root Item...
+   /// </summary>
    public CatalogItemModel RootItem = null;
 
+   /// <summary>
+   /// Current Container Item...
+   /// </summary>
+   public ContainerItem CurrentContainerItem { get; set; } = null;
+
+   /// <summary>
+   /// Notify Events
+   /// </summary>
    public NotificationEventHandler NotifyEvent { get; set; }
 
    /// <summary>
@@ -77,8 +92,14 @@ public class CatalogViewModel
    public async Task<List<ItemDataInfo>> GetItemDataAsync(CatalogItemModel item)
    {
       CatalogPathItem pitem = item.Item.Tag as CatalogPathItem;
+
+      var catalog = CurrentContainerItem.Catalog;
+
+      //var idata =
+      //   await Catalog.CatalogService.ItemData.GetItemDataAsync(pitem.Item.Id);
+
       var idata =
-         await Catalog.CatalogService.ItemData.GetItemDataAsync(pitem.Item.Id);
+         await catalog.CatalogService.ItemData.GetItemDataAsync(pitem.Item.Id);
       return idata;
    }
 

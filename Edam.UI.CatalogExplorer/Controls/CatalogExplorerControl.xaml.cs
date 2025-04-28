@@ -16,6 +16,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage.Pickers;
 
+// -----------------------------------------------------------------------------
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Edam.UI.Catalog.Controls;
@@ -26,10 +27,12 @@ public sealed partial class CatalogExplorerControl : UserControl
    private object _lastSelected = null;
    private CatalogExplorerViewModel _ViewModel =
        new CatalogExplorerViewModel();
+
    public CatalogExplorerViewModel ViewModel
    {
       get { return _ViewModel; }
    }
+
    public CatalogExplorerControl()
    {
       this.InitializeComponent();

@@ -89,6 +89,7 @@ public class CatalogExplorerViewModel : ObservableObject
    /// <returns>Task is returned</returns>
    public void InitializeCatalogAsync(ContainerItem item)
    {
+      CatalogBase.CurrentContainerItem = item;
       SetupCatalogAsync(item.Catalog);
    }
 
@@ -142,15 +143,13 @@ public class CatalogExplorerViewModel : ObservableObject
          var citem = item as CatalogItemModel;
          var items = await CatalogBase.GetItemDataAsync(citem);
          var data = items != null && items.Count > 0 ? items[0] : null;
-         if (data != null)
+
+         ItemContent icontent = new ItemContent
          {
-            ItemContent icontent = new ItemContent
-            {
-               Item = citem.Item,
-               Content = data.DataText
-            };
-            NotifyEvent(icontent as IItemContent);
-         }
+            Item = citem.Item,
+            Content = data == null ? String.Empty : data.DataText
+         };
+         NotifyEvent(icontent as IItemContent);
       }
    }
 

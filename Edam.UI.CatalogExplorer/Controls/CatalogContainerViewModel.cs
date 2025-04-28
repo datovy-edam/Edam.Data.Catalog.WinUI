@@ -126,6 +126,14 @@ public class CatalogContainerViewModel : ObservableObject
 
          // add container
          var container = new ContainerItem(client);
+
+         // set the Current Container Item
+         if (container.Catalog == null && 
+            CatalogBase.CurrentContainerItem == null)
+         {
+            CatalogBase.CurrentContainerItem = container;
+         }
+
          container.Container = item;
          container.Catalog = container.Catalog ?? CatalogBase.Catalog;
          DataSource.Add(container);
