@@ -14,7 +14,8 @@ public interface ICatalogService
 {
    CatalogInfo? Catalog { get; }
    Object Instance { get; }
-
+   
+   string DefaultContainerId { get; set; }
    ContainerInfo DefaultContainer { get; set; }
    ContainerInfo CurrentContainer { get; set; }
 

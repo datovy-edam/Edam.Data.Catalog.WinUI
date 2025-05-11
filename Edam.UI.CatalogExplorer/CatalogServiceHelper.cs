@@ -9,12 +9,12 @@ using Edam.Data.CatalogModel;
 using catDb = Edam.Data.CatalogDb;
 using catSrv = Edam.Data.CatalogService;
 using Edam.Diagnostics;
+using Edam.Data.CatalogDb;
 
 namespace Edam.UI.CatalogExplorer;
 
 public class CatalogServiceHelper
 {
-   public static string _SessionId = Guid.NewGuid().ToString();
 
    /// <summary>
    /// Get HTTP based Catalog API Service instance...
@@ -29,12 +29,13 @@ public class CatalogServiceHelper
 
       // initialize repository
       catSrv.CatalogInstance instance = new catSrv.CatalogInstance();
-      var instResults = instance.GetCatalog(_SessionId,
+      var instResults = instance.GetCatalog(CatalogBaseClient.SessionId,
          catSrv.CatalogInstance.EDAM_BASE_URI, _conUri);
 
       if (instResults.Success)
       {
-         await instResults.Instance.InitializeClientAsync(_SessionId, "");
+         await instResults.Instance.InitializeClientAsync(
+            CatalogBaseClient.SessionId, "");
          return instResults.Instance;
       }
       return null;
@@ -58,12 +59,13 @@ public class CatalogServiceHelper
 
       // initialize repository
       catDb.CatalogInstance instance = new catDb.CatalogInstance();
-      results = instance.GetCatalog(_SessionId,
+      results = instance.GetCatalog(CatalogBaseClient.SessionId,
          invariantName, connectionString);
 
       if (results.Success)
       {
-         results.Instance.Container.SetContainer(_SessionId, "");
+         results.Instance.Container.SetContainer(
+            CatalogBaseClient.SessionId, "");
          return results.Instance;
       }
       return null;
@@ -127,7 +129,8 @@ public class CatalogServiceHelper
       try
       {
          ICatalogService instance = await GetInstanceAsync(connectionUri);
-         catalog = instance.Catalog ?? new CatalogInfo(instance, _SessionId);
+         catalog = instance.Catalog ?? 
+            new CatalogInfo(instance ,instance, CatalogBaseClient.SessionId);
          await catalog.InitializeCatalogAsync(
             "", buildTree: instance.Catalog == null);
       }

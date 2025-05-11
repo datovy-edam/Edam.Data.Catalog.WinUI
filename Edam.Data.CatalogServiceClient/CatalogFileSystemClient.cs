@@ -9,7 +9,7 @@ using Edam.Data.CatalogServiceClient;
 namespace Edam.Data.CatalogService;
 
 public class CatalogFileSystemClient : CatalogBaseClient, ICatalogClient, 
-   ICatalogService
+   ICatalogService, ICatalogBaseClient
 {
 
    #region -- 1.00 - Fields and Properties declration/definitions
@@ -36,56 +36,99 @@ public class CatalogFileSystemClient : CatalogBaseClient, ICatalogClient,
       get { return _catalog.RootItem; }
    }
 
+   public string DefaultRootFileFolder
+   {
+      get { return _defaultRootFileFolder; }
+   }
+
    #endregion
    #region -- 1.50 - Constructure and Initialization
 
-   public CatalogFileSystemClient(string sessionId, string baseUri) :
+   /// <summary>
+   /// Initialize file system catalog instance and container using given ID.
+   /// </summary>
+   /// <param name="sessionId"></param>
+   /// <param name="defaultContainerId">(required) default container id</param>
+   /// <param name="baseUri">base uri for given default container</param>
+   public CatalogFileSystemClient(
+      string sessionId, string defaultContainerId, string? baseUri = null) :
       base(sessionId, baseUri)
    {
-      _lastSessionId = sessionId;
+      _SessionId = sessionId;
       _BaseURI = baseUri;
+      DefaultContainerId = defaultContainerId;
+   }
+
+   /// <summary>
+   /// Get base URI.
+   /// </summary>
+   /// <param name="baseUri">base uri (default: null)</param>
+   /// <returns>the uri is returned</returns>
+   public static string? GetBaseURI(string? baseUri = null)
+   {
+      string? uri = null;
+
+      if (String.IsNullOrWhiteSpace(baseUri))
+      {
+         uri = AppSettings.GetSectionString(
+            "DefaultRootFileFolder", AppSettings.APP_SETTINGS_SECTION_KEY);
+         if (!String.IsNullOrWhiteSpace(uri))
+         {
+            uri = uri.Replace("\\", "/");
+         }
+      }
+      else
+      {
+         uri = baseUri;
+      }
+      return uri;
    }
 
    /// <summary>
    /// Initialize Client.
    /// </summary>
-   /// <param name="container"></param>
-   public async Task InitializeClientAsync(ICatalogContainer container)
-   { 
-      if (String.IsNullOrWhiteSpace(_BaseURI))
+   /// <param name="catalogContainer">default catalog container</param>
+   public async Task InitializeClientAsync(
+      ICatalogContainer? catalogContainer = null)
+   {
+      _defaultRootFileFolder = GetBaseURI(_BaseURI);
+
+      // get the default catalog container...
+      var containerService = catalogContainer;
+      if (containerService == null)
       {
-         _defaultRootFileFolder = AppSettings.GetSectionString(
-            "DefaultRootFileFolder", AppSettings.APP_SETTINGS_SECTION_KEY);
-         if (!String.IsNullOrWhiteSpace(_defaultRootFileFolder))
-         {
-            _defaultRootFileFolder = _defaultRootFileFolder.Replace("\\", "/");
-         }
-      }
-      else
-      {
-         _defaultRootFileFolder = _BaseURI;
+         containerService = CatalogServiceInstance.DefaultInstance.Container;
       }
 
       // try to find a container based on this base URI...
-      var cnts = container.GetContainers();
-      var fcontainer = cnts.Find(
-         (x) => x.ContainerURI == _defaultRootFileFolder);
+      var cnts = containerService.GetContainers();
+
+      ContainerInfo fcontainer = cnts.Find(
+         (x) => x.ContainerId == DefaultContainerId);
+
+      // try finding the catalog base on its base URI or path
+      if (fcontainer == null)
+      {
+         fcontainer = cnts.Find(
+            (x) => x.ContainerURI == _defaultRootFileFolder);
+      }
+
       if (fcontainer == null)
       {
          // create a new container for given URI
-         fcontainer = container.EnlistContainer(
-            "root-folder", FILE_SYSTEM + " Container",
+         fcontainer = containerService.EnlistContainer(
+            DefaultContainerId, FILE_SYSTEM + " Container",
             _defaultRootFileFolder);
       }
       else
       {
-         container.SetContainer(_lastSessionId, fcontainer.ContainerId);
+         containerService.SetContainer(_SessionId, fcontainer.ContainerId);
       }
 
       CurrentContainer = fcontainer;
 
       // use given container management instance...
-      Container = container;
+      Container = containerService;
       Item = new CatalogFileSystemItem(this);
 
       // get/create root item
@@ -120,13 +163,51 @@ public class CatalogFileSystemClient : CatalogBaseClient, ICatalogClient,
    /// <param name="baseUri">that should be a folder full path name</param>
    public async Task InitializeFileItems(string baseUri)
    {
-      _catalog = new CatalogInfo(this, String.Empty);
+      _catalog = new CatalogInfo(
+         CatalogServiceInstance.DefaultInstance, this, String.Empty);
       _catalog.RootPathItem = _rootItem;
       CatalogTreeBuilder builder = new CatalogTreeBuilder(this, _catalog);
       builder.RegisterRootItem(_rootItem);
       Cataloger = builder;
       _builder = await CatalogFileSystem.FileSystemToCatalogAsync(
          baseUri, builder);
+   }
+
+   #endregion
+   #region 4.00 - Catalog File System Client Support
+
+   /// <summary>
+   /// Get Client.
+   /// </summary>
+   /// <param name="defaultContainerId">default container-id</param>
+   /// <param name="path">if null the base URI should be defined in the </param>
+   /// <returns>instance of CatalogFileSystemClient is returned</returns>
+   public static async Task<CatalogFileSystemClient> GetClientAsync(
+      string defaultContainerId, string? path = null)
+   {
+      ICatalogContainer? container = null; // AppHelper.CatalogInstance.Container;
+      var client = new CatalogFileSystemClient(
+         sessionId: Guid.NewGuid().ToString(),
+         defaultContainerId: defaultContainerId,
+         baseUri: path);
+      await client.InitializeClientAsync(container);
+      return client;
+   }
+
+   /// <summary>
+   /// Get File System Catalog Client.
+   /// </summary>
+   /// <param name="fileSystemPath">if null the base URI should be defined 
+   /// in the app-settings file.</param>
+   /// <returns>instance of CatalogFileSystemClient is returned</returns>
+   public static CatalogFileSystemClient GetClient(
+      string defaultContainerId, string? fileSystemPath = null)
+   {
+      var task = GetClientAsync(
+         defaultContainerId: defaultContainerId,
+         path: fileSystemPath);
+      task.Wait();
+      return task.Result;
    }
 
    #endregion

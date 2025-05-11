@@ -114,7 +114,8 @@ public class CatalogViewModel
       ContainerInfo container)
    {
       var client = new CatalogFileSystemClient(
-         Guid.NewGuid().ToString(), container.ContainerURI);
+         Guid.NewGuid().ToString(), container.ContainerId, 
+         container.ContainerURI);
       await client.InitializeClientAsync(
          Catalog.CatalogService.Container);
       return client;

@@ -301,19 +301,22 @@ public class CatalogFileSystemItem : ICatalogItem
    /// <summary>
    /// Get Branches that its beginning match with given path pattern.
    /// </summary>
-   /// <param name="item">item to ask</param>
-   /// <returns>created item is returned, else null</returns>
+   /// <param name="path">partial path to match with</param>
+   /// <returns>list of found paths that match the given path is returned
+   /// </returns>
    public List<ItemInfo?> GetBranch(string? path)
    {
       _Client.ResultsLog.Clear();
       List<ItemInfo?> oitems = new();
 
-      // does branch already registered?
-      var fitem = _Client.Cataloger.GetPathItem(path);
-      if (fitem != null)
+      var itms = _Client.Cataloger.Dictionary.Keys
+                    .Where(k => k.StartsWith(path.ToLower()));
+      
+      foreach (var itm in itms)
       {
-         oitems.Add(fitem.Item);
+         oitems.Add(_Client.Cataloger.Dictionary[itm].Item);
       }
+
       return oitems;
    }
 

@@ -24,9 +24,26 @@ public class CatalogServiceInstance :
 
    #region -- 1.00 - Fields and Properties
 
+   private static CatalogServiceInstance _defaultService;
+
+   /// <summary>
+   /// Default DB Context Instance that is required for supporing all Catalogs.
+   /// </summary>
+   public static ICatalogService DefaultInstance
+   {
+      get { return _defaultService; }
+   }
+
+   /// <summary>
+   /// Database Context for Catalog Services.
+   /// </summary>
    protected CatalogContext? DbContext { get; set; } = null;
 
-   public CatalogInfo Catalog { get; set; }
+   protected CatalogInfo _Catalog;
+   public CatalogInfo Catalog
+   {
+      get { return _Catalog; }
+   }
 
    public object Instance
    {
@@ -39,6 +56,7 @@ public class CatalogServiceInstance :
    public CatalogServiceInstance(string? defaultConnectionString) : 
       base(defaultConnectionString)
    {
+      _defaultService = this;
       _defaultConnectionString = defaultConnectionString;
    }
 

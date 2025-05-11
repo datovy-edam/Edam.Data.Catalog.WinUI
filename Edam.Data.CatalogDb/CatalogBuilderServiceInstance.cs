@@ -20,20 +20,6 @@ public class CatalogBuilderServiceInstance :
    CatalogServiceInstance, ICatalogService
 {
 
-   private string _SessionId = null;
-   public string SessionId
-   {
-      get { return _SessionId; }
-   }
-
-   private CatalogInfo _Catalog;
-   private CatalogTreeBuilder _Builder;
-
-   public CatalogInfo Catalog
-   { get { return _Catalog; } }
-   public CatalogTreeBuilder Builder
-   {  get { return _Builder; } }
-
    public CatalogBuilderServiceInstance(string? defaultConnectionString) :
       base(defaultConnectionString)
    {
@@ -45,12 +31,16 @@ public class CatalogBuilderServiceInstance :
    /// <summary>
    /// Initialize Repository
    /// </summary>
-   protected void InitializeDbContext()
+   protected async void InitializeDbContext()
    {
       var connectionString =
          String.IsNullOrWhiteSpace(_defaultConnectionString) ?
             AppSettings.GetConnectionString("catalogDb") :
             _defaultConnectionString;
+      if (_defaultConnectionString == null)
+      {
+         _defaultConnectionString = connectionString;
+      }
 
       // get DbContext
       DbContext = new CatalogContext(connectionString);
@@ -111,31 +101,23 @@ public class CatalogBuilderServiceInstance :
       {
          Item.CreateRootItem();
       }
+
+      // initialize catalog and builder
+
+      _Catalog = new CatalogInfo(this, this, _SessionId);
+      await _Catalog.InitializeCatalogAsync("", false);
+
+      _builder = new CatalogTreeBuilder(this, _Catalog);
    }
 
    /// <summary>
    /// 
    /// </summary>
-   /// <param name="sessionId"></param>
    /// <param name="containerId"></param>
    /// <returns></returns>
-   public ContainerInfo? SetContainer(
-      string sessionId, string containerId)
+   public ContainerInfo? SetContainer(string containerId)
    {
-      if (_SessionId == null)
-      {
-         _SessionId = sessionId;
-
-         _Catalog = new CatalogInfo(this, _SessionId);
-         _Catalog.InitializeCatalogAsync("", false);
-
-         _Builder = new CatalogTreeBuilder(this, Catalog);
-      }
-      else
-      {
-         sessionId = _SessionId;
-      }
-      return base.Container.SetContainer(sessionId, containerId);
+      return base.Container.SetContainer(_SessionId, containerId);
    }
 
    #endregion
@@ -148,7 +130,7 @@ public class CatalogBuilderServiceInstance :
    /// <returns></returns>
    public async Task<ItemInfo> AddItemAsync(ItemInfo item)
    {
-      var pitem = await Builder.GetItemAsync(item);
+      var pitem = await _builder.GetItemAsync(item);
       var itm = await base.Item.AddItemAsync(pitem.Item);
       return itm;
    }

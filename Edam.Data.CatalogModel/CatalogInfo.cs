@@ -24,12 +24,19 @@ public class CatalogInfo
    public static string IconBranch { get; set; }
    public static string IconLeaf { get; set; }
 
+   /// <summary>
+   /// The Default Catalog is always available and manages the available 
+   /// containers for all other Catalog instances.
+   /// </summary>
    private ICatalogService? _DefaultCatalogService { get; set; }
    public ICatalogService? DefaultCatalogService
    {
       get { return _DefaultCatalogService; }
    }
 
+   /// <summary>
+   /// Catalog Service (could be the same as the Default Catalog)
+   /// </summary>
    public ICatalogService CatalogService { get; set; }
 
    //private HashSet<CatalogItemInfo?>? _Catalog;
@@ -62,9 +69,18 @@ public class CatalogInfo
    #endregion
    #region -- 1.50 - Initialization
 
-   public CatalogInfo(ICatalogService service, string sessionId)
+   /// <summary>
+   /// 
+   /// </summary>
+   /// <param name="defaultCatalogService"></param>
+   /// <param name="service"></param>
+   /// <param name="sessionId"></param>
+   public CatalogInfo(
+      ICatalogService? defaultCatalogService,
+      ICatalogService service, string sessionId)
    {
-      CatalogService = _DefaultCatalogService = service;
+      _DefaultCatalogService = defaultCatalogService;
+      CatalogService = service;
       //var container = service.SetContainer(sessionId, String.Empty);
    }
 
@@ -101,13 +117,10 @@ public class CatalogInfo
       return this;
    }
 
-   public void InitializeCatalog(CatalogTreeBuilder builder)
-   {
-      // add catalog
-      //_Catalog = new HashSet<CatalogItemInfo>();
-      //_Catalog.Add(this.RootTreeItem);
-   }
+   #endregion
+   #region -- 2.00 - Catalog Item Cloning
+
+
 
    #endregion
-
 }

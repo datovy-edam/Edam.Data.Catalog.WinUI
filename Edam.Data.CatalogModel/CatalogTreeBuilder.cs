@@ -28,8 +28,32 @@ public class CatalogTreeBuilder
    private List<ItemInfo> _items;
 
    private ICatalogService _Service;
-   private CatalogInfo _CatalogInfo;
    private Dictionary<string, CatalogPathItem>? _Dictionary;
+
+   private CatalogInfo _CatalogInfo;
+
+   private CatalogPathItem _RootPathItem;
+   public CatalogPathItem RootPathItem
+   {
+      get {  return _RootPathItem; }
+      set
+      {
+         _RootPathItem = value;
+         if (_CatalogInfo != null)
+         {
+            _CatalogInfo.RootPathItem = value;
+         }
+      }
+   }
+
+   private CatalogItemInfo _RootTreeItem
+   {
+      get { return _RootPathItem.TreeItem; }
+   }
+   private ItemInfo _RootItem
+   {
+      get { return _RootPathItem.Item; }
+   }
 
    public Dictionary<string, CatalogPathItem>? Dictionary
    {
@@ -41,7 +65,9 @@ public class CatalogTreeBuilder
       _Dictionary = catalog.CatalogDictionary ??
          new Dictionary<string, CatalogPathItem>();
       _Service = service;
+
       _CatalogInfo = catalog;
+      _RootPathItem = catalog.RootPathItem;
    }
 
    #endregion
@@ -178,7 +204,7 @@ public class CatalogTreeBuilder
    /// <returns>extended path name is returned</returns>
    public string ExtendPathName(string path)
    {
-      return _CatalogInfo.RootPathItem.DriverName + path;
+      return _RootPathItem.DriverName + path;
    }
 
    /// <summary>
@@ -188,7 +214,7 @@ public class CatalogTreeBuilder
    /// <returns>fully extended path name is returned</returns>
    public string ExtendFullPathName(ItemInfo item)
    {
-      return _CatalogInfo.RootPathItem.RootFullPath + 
+      return _RootPathItem.RootFullPath + 
          item.FullPath.Substring(1);
    }
 
@@ -321,9 +347,9 @@ public class CatalogTreeBuilder
       {
          return;
       }
-      if (_CatalogInfo != null && _CatalogInfo.RootPathItem == null)
+      if (_RootPathItem == null)
       {
-         _CatalogInfo.RootPathItem = item;
+         RootPathItem = item;
       }
       _Dictionary.Add(item.Full.ToLower(), item);
    }
@@ -383,11 +409,11 @@ public class CatalogTreeBuilder
          }
 
          // finally add child to parent as needed
-         if (parent == null && !_CatalogInfo.RootTreeItem.Children.TryGetValue(
+         if (parent == null && !_RootTreeItem.Children.TryGetValue(
             pathItem.TreeItem, out CatalogItemInfo rootChild))
          {
             // add item to the root node
-            _CatalogInfo.RootTreeItem.Children.Add(pathItem.TreeItem);
+            _RootTreeItem.Children.Add(pathItem.TreeItem);
          }
          else if (parent != null && !parent.TreeItem.Children.TryGetValue(
             pathItem.TreeItem, out CatalogItemInfo child))
@@ -432,9 +458,9 @@ public class CatalogTreeBuilder
       }
 
       // is this the root path? if so, skip it...
-      if (pathItem.Path == _CatalogInfo.RootItem.FullPath)
+      if (pathItem.Path == _RootItem.FullPath)
       {
-         return _CatalogInfo.RootTreeItem;
+         return _RootTreeItem;
       }
 
       // setup parent as needed
@@ -460,9 +486,9 @@ public class CatalogTreeBuilder
    }
 
    /// <summary>
-   /// Get Catalog Item information from a File Item.
+   /// Get Catalog Item information from while adding given item.
    /// </summary>
-   /// <param name="item">file item</param>
+   /// <param name="item">item to find or add</param>
    /// <returns>instance of catalog item is returned</returns>
    public async Task<CatalogPathItem> GetItemAsync(ItemInfo item)
    {
@@ -526,11 +552,11 @@ public class CatalogTreeBuilder
       FolderFileItemInfo item, CatalogPathItem? parent = null)
    {
       // if this is the root item just return
-      if (item.Full == _CatalogInfo.RootPathItem.RootFullPath)
-         return _CatalogInfo.RootPathItem;
+      if (item.Full == _RootPathItem.RootFullPath)
+         return _RootPathItem;
 
       string path = "/" + item.Full.Substring(
-         _CatalogInfo.RootPathItem.RootFullPath.Length);
+         _RootPathItem.RootFullPath.Length);
 
       // try to catalog and register the item
       CatalogPathItem pitem = null;
@@ -551,7 +577,7 @@ public class CatalogTreeBuilder
       }
 
       pitem = new CatalogPathItem(fitem);
-      pitem.Parent = parent ?? _CatalogInfo.RootPathItem;
+      pitem.Parent = parent ?? _RootPathItem;
       if (foundItem == null)
       {
          var citem = await GetItemAsync(pitem);
@@ -627,8 +653,7 @@ public class CatalogTreeBuilder
    {
       if (resetCatalog)
       {
-         _Dictionary = _CatalogInfo.CatalogDictionary;
-         _Dictionary.Clear();
+         _Dictionary = new Dictionary<string, CatalogPathItem>();
       }
 
       await GetBranchAsync();

@@ -99,7 +99,7 @@ public partial class CatalogClient : CatalogBaseClient, ICatalogClient
       _resultsLog.Clear();
 
       QueryStringBuilder pars = new QueryStringBuilder();
-      pars.Add(QueryStringTag.SessionId, _lastSessionId);
+      pars.Add(QueryStringTag.SessionId, _SessionId);
       pars.Add(TAG_CONTENT_TYPE_ID, contentTypeId);
       ContentTypeInfo item = null;
 

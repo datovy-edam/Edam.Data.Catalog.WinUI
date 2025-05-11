@@ -61,11 +61,16 @@ public partial class CatalogBaseClient : ICatalogBaseClient
    protected string _BaseURI;
 
    protected CatalogTreeBuilder? _builder = null;
-   protected string _lastSessionId;
    protected HttpRequestInfo _httpRequestInfo;
    protected WebApiClient _client;
    protected IResultsLog _resultsLog = new ResultLog();
    protected string _defaultConnectionString;
+
+   protected static string _SessionId = Guid.NewGuid().ToString();
+   public static string SessionId
+   {
+      get { return _SessionId; }
+   }
 
    /// <summary>
    /// Catalog Tree Builder used when a dynamic tree is needed.
@@ -106,7 +111,7 @@ public partial class CatalogBaseClient : ICatalogBaseClient
    /// </summary>
    public string LastSessionId
    {
-      get { return _lastSessionId; }
+      get { return _SessionId; }
    }
 
    /// <summary>
@@ -116,6 +121,11 @@ public partial class CatalogBaseClient : ICatalogBaseClient
    {
       get { return _resultsLog; }
    }
+
+   /// <summary>
+   /// A string that represents the container uniquely...
+   /// </summary>
+   public string DefaultContainerId { get; set; } = "default";
 
    /// <summary>
    /// Default and Current Containers.
@@ -133,20 +143,20 @@ public partial class CatalogBaseClient : ICatalogBaseClient
    #endregion
    #region -- 1.50 - Constructure and Initialization
 
-   public CatalogBaseClient(string sessionId, string baseUri)
+   public CatalogBaseClient(string sessionId, string? baseUri = null)
    {
       HttpRequestInfo req = new HttpRequestInfo();
       req.BaseUri = String.IsNullOrWhiteSpace(baseUri) ?
          DEVELOPMENT_URI : baseUri;
       req.ContentType = WebApiContentType.ApplicationJson;
       _httpRequestInfo = req;
-      _lastSessionId = sessionId;
+      _SessionId = sessionId;
    }
 
    public CatalogBaseClient(string sessionId, HttpRequestInfo connectionInfo)
    {
       _httpRequestInfo = connectionInfo;
-      _lastSessionId = sessionId;
+      _SessionId = sessionId;
    }
 
    public CatalogBaseClient(string connectionInfo)
@@ -171,16 +181,16 @@ public partial class CatalogBaseClient : ICatalogBaseClient
       if (_resultsLog == null)
          _resultsLog = new ResultLog();
       _resultsLog.Clear();
-      if (String.IsNullOrWhiteSpace(_lastSessionId) &&
+      if (String.IsNullOrWhiteSpace(_SessionId) &&
          !String.IsNullOrWhiteSpace(sessionId))
       {
-         _lastSessionId = sessionId;
+         _SessionId = sessionId;
       }
 
       _client = new WebApiClient(_httpRequestInfo);
 
       QueryStringBuilder pars = new QueryStringBuilder();
-      pars.Add(QueryStringTag.SessionId, _lastSessionId);
+      pars.Add(QueryStringTag.SessionId, _SessionId);
       pars.Add(TAG_CONTAINER_ID, containerId);
       ContainerInfo? container = null;
 
