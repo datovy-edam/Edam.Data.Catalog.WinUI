@@ -103,9 +103,12 @@ public class CatalogClone
          new CatalogTreeBuilder(target, null) : tclient.Cataloger;
 
       // go through the list of items and clone those...
+      //List<KeyValuePair<string,string>> visited = 
+      //   new List<KeyValuePair<string,string>>();
+
       foreach (var itm in items)
       {
-         var pitem = ItemDataUpsertAsync(cataloger, itm, source, target);
+         var pitem = await ItemDataUpsertAsync(cataloger, itm, source, target);
       }
    }
 

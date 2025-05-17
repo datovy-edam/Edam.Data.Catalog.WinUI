@@ -177,7 +177,7 @@ public class CatalogFileSystemClient : CatalogBaseClient, ICatalogClient,
    #region 4.00 - Catalog File System Client Support
 
    /// <summary>
-   /// Get Client.
+   /// Get File System Client.
    /// </summary>
    /// <param name="defaultContainerId">default container-id</param>
    /// <param name="path">if null the base URI should be defined in the </param>
@@ -197,6 +197,7 @@ public class CatalogFileSystemClient : CatalogBaseClient, ICatalogClient,
    /// <summary>
    /// Get File System Catalog Client.
    /// </summary>
+   /// <param name="defaultContainerId">default container-id</param>
    /// <param name="fileSystemPath">if null the base URI should be defined 
    /// in the app-settings file.</param>
    /// <returns>instance of CatalogFileSystemClient is returned</returns>

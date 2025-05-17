@@ -35,14 +35,18 @@ public sealed class TestCatalogClone
       CatalogInfo catalog = client.Catalog;
       ICatalogService service = catalog.CatalogService;
 
-      // Where the source items will be placed within the target catalog?
+      // TARGET **** SPECIFY TARGET LANDING PATH
+
+      // Where the items will be placed within the target catalog?
       // Note that the default catalog may or may not contain this path and
       // we need to make sure is created then move all its content.
       string targetPath = "/Projects/PSJ.Courts/";
 
+      // SOURCE **** COPY COMPLETE PARENT FOLDER CONTENT
+
       // Within the source catalog look-up the source path...
-      // Note that "/PSJ.Courts/" is the Project then parent folder of the
-      // file (or leaf)...
+      // Note that "/PSJ.Courts/" is the Project then PARENT folder of the
+      // file (or leaf)... ALL PARENT CHILD ITEMS WILL BE CLONNED
       string sourcePath = 
          "/PSJ.Courts/Arguments/0001.Courts.ToDictionary.Args.json";
       var item = service.Item.GetItemByPath(sourcePath);
