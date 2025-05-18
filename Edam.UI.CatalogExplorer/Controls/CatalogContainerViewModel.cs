@@ -36,6 +36,23 @@ public class CatalogContainerViewModel : ObservableObject
       }
    }
 
+   private Visibility _containerCloneVisibility;
+   public Visibility ContainerCloneVisibility
+   {
+      get { return _containerCloneVisibility; }
+      set
+      {
+         if (_containerCloneVisibility != value)
+         {
+            _containerCloneVisibility = value;
+            OnPropertyChanged(nameof(ContainerCloneVisibility));
+         }
+      }
+   }
+
+   public ObservableCollection<ContainerItem> ContainerItems { get; set; } = 
+      new ObservableCollection<ContainerItem>();
+
    public ObservableCollection<ContainerItem> DataSource { get; set; } =
        new ObservableCollection<ContainerItem>();
 
@@ -44,6 +61,19 @@ public class CatalogContainerViewModel : ObservableObject
    public CatalogContainerViewModel()
    {
       ContainerEditVisibility = Visibility.Collapsed;
+      ContainerCloneVisibility = Visibility.Collapsed;
+   }
+
+   /// <summary>
+   /// Prepare a list of containers that are currently available
+   /// </summary>
+   public void PrepareContainerItems()
+   {
+      ContainerItems.Clear();
+      foreach (var item in DataSource)
+      {
+         ContainerItems?.Add(item);
+      }
    }
 
    /// <summary>

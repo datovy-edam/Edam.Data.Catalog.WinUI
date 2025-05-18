@@ -35,7 +35,7 @@ public sealed partial class CatalogContainerControl : UserControl
 
    }
 
-   #region -- 4.00 - Container Support
+   #region -- 4.00 - New Container Editor Support
 
    private void ToggleContenerEditor()
    {
@@ -75,6 +75,41 @@ public sealed partial class CatalogContainerControl : UserControl
    }
 
    #endregion
+   #region -- Duplicate/Clone Selected Item in Target Container
+
+   private void ToggleContenerClone()
+   {
+      ContainerClone.Visibility =
+          ContainerClone.Visibility == Visibility.Visible ?
+             Visibility.Collapsed : Visibility.Visible;
+
+      if (ContainerClone.Visibility == Visibility.Visible)
+      {
+         ViewModel.PrepareContainerItems();
+      }
+   }
+
+   private void ToggleContainerClone_Click(object sender, PointerRoutedEventArgs e)
+   {
+      ToggleContenerClone();
+   }
+
+   private void CancelContainerClone_Click(object sender, PointerRoutedEventArgs e)
+   {
+      ToggleContenerClone();
+   }
+
+   private void CloneContainer_Click(object sender, PointerRoutedEventArgs e)
+   {
+      ToggleContenerClone();
+   }
+
+   private void ContainersComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+   {
+
+   }
+
+   #endregion
 
    private void ListViewer_SelectionChanged(
       object sender, SelectionChangedEventArgs e)
@@ -84,5 +119,4 @@ public sealed partial class CatalogContainerControl : UserControl
          ViewModel.SelectedContainer(e.AddedItems[0] as ContainerItem);
       }
    }
-
 }
