@@ -1,10 +1,13 @@
-using Edam.Data.CatalogDb;
-using Edam.Data.CatalogService;
-using Edam.Data.CatalogModel;
-using szer = Edam.Serialization;
 using Edam.DataObjects.Requests;
 using Edam.DataObjects.Objects;
 using Newtonsoft;
+
+// -----------------------------------------------------------------------------
+using Edam.Data.CatalogDb;
+using Edam.Data.CatalogService;
+using Edam.Data.CatalogModel;
+using Edam.Data.CatalogServiceClient;
+using szer = Edam.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,8 +29,9 @@ var app = builder.Build();
 app.UseExceptionHandler();
 
 // setup service container 
-WebAppService appService = new WebAppService(app);
+CatalogServiceMap map = new(app);
 
+/*
 #region -- 1.50 - Initialization and Session Management
 
 // this should be called first...
@@ -353,6 +357,7 @@ app.MapGet("/catalogservice/catalog/content/type/id", (
 });
 
 #endregion
+ */
 
 app.UseCors(cors => cors
    .AllowAnyMethod()

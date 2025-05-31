@@ -1,6 +1,8 @@
 ﻿using Edam.Application;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Builder;
 
+// -----------------------------------------------------------------------------
 namespace Edam.Data.CatalogService;
 
 public class WebAppService : IDisposable

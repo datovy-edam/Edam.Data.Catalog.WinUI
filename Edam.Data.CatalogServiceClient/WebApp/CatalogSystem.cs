@@ -39,9 +39,13 @@ public class CatalogSystem
    {
       ICatalogService? catalog = null;
       var inst = new CatalogInstance();
+
+      // TODO: base URI is undefined and it may be needed
       string sessionId = Guid.NewGuid().ToString();
-      var results = inst.GetCatalog(
-         sessionId, CatalogInstance.EDAM_CATALOG_DB);
+      string invariantName = CatalogInstance.EDAM_BASE_URI;
+      string baseUri = String.Empty;
+      var results = inst.GetCatalog(sessionId, invariantName, baseUri);
+
       if (results != null)
       {
          catalog = results.Instance;
